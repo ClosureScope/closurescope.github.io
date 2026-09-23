@@ -2,7 +2,7 @@
 #show: article.with(
   title: "Value Iteration",
   date: "2026-09-23",
-  category: "Optimization",
+  category: "Reinforcement Learning",
 )
 
 = Bellman Expectation Equation
