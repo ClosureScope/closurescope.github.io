@@ -88,7 +88,7 @@
   show emph: text.with(font: (font-en, font-kai), style: "normal")
   show raw: set text(font: (font-code, font-hei))
   show: frame-style(styles.hint)
-  set heading(numbering: "1.1")
+  set heading(numbering: "1.1.")
   [#metadata((title: title, date: date, category: category)) <blog-meta>]
   // Astro renders the website title; standalone HTML and PDF need their own.
   if sys.inputs.at("site", default: "false") != "true" {
