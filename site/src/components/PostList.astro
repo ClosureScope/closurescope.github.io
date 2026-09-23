@@ -6,7 +6,7 @@ const { posts } = Astro.props;
     <li>
       <time datetime={post.date}>{post.date.replaceAll('-', '.')}</time>
       <div>
-        <h2><a href={`/posts/${post.slug}/`}>{post.title}</a></h2>
+        <h3><a href={`/posts/${post.slug}/`}>{post.title}</a></h3>
         <p>{post.description}</p>
       </div>
     </li>

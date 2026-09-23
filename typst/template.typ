@@ -81,7 +81,7 @@
 )
 
 // Blog entry point. Both HTML and PDF begin directly with the article body.
-#let article(title: "", date: "", description: "", author: "Closure", body) = {
+#let article(title: "", date: "", description: "", category: "", author: "Closure", body) = {
   set document(title: title, author: author, description: description)
   set text(lang: "zh", region: "cn", font: (font-en, font-song))
   show strong: set text(font: (font-en, font-hei), weight: "regular")
@@ -89,7 +89,7 @@
   show raw: set text(font: (font-code, font-hei))
   show: frame-style(styles.hint)
   set heading(numbering: "1.1")
-  [#metadata((title: title, date: date, description: description)) <blog-meta>]
+  [#metadata((title: title, date: date, description: description, category: category)) <blog-meta>]
   // Astro renders the website title; standalone HTML and PDF need their own.
   if sys.inputs.at("site", default: "false") != "true" {
     block(below: 1.5em)[#text(size: 18pt, weight: "bold")[#title]]

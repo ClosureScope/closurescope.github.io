@@ -2,9 +2,19 @@
 import Layout from '../layouts/Layout.astro';
 import PostList from '../components/PostList.astro';
 import posts from '../../../.generated/posts.json';
+import { categories } from '../../../scripts/categories.mjs';
+const groups = categories.map(category => ({
+  category,
+  posts: posts.filter(post => post.category === category),
+})).filter(group => group.posts.length > 0);
 ---
 <Layout>
   <section class="page-intro"><h1>文章</h1></section>
-  <PostList posts={posts} />
+  {groups.map(group => (
+    <section class="category-section" aria-label={group.category}>
+      <h2>{group.category}</h2>
+      <PostList posts={group.posts} />
+    </section>
+  ))}
   {posts.length === 0 && <p class="muted">暂无文章。</p>}
 </Layout>
