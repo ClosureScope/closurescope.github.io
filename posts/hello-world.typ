@@ -1,23 +1,25 @@
 #import "../typst/template.typ": *
 #show: article.with(
-  title: "Hello, Typst · 从一个梯度开始",
+  title: "最小二乘问题的梯度",
   date: "2026-09-23",
-  description: "一个最小二乘梯度的例子。",
+  description: "最小二乘目标函数及其梯度。",
 )
 
-= 从一个梯度开始
+= 目标函数
 
-这是我的第一篇技术文章。正文、数学公式和代码都写在同一个 Typst 文件里。
-以最小二乘问题为例，设 $A$ 是矩阵，$x$ 和 $b$ 是向量。
-对于目标函数 $f(x) = 1/2 norm(A x - b)^2$，它的梯度为：
+给定矩阵 $A$ 和向量 $b$，最小二乘目标函数为
+
+$ f(x) = 1/2 norm(A x - b)^2 $
+
+它的梯度为
 
 $
   nabla f(x) = A^T (A x - b)
 $
 
-== 用 Python 表达
+== Python 实现
 
-下面的函数使用矩阵乘法直接计算梯度；输入可以是 NumPy 数组。
+输入为 NumPy 数组时，可以这样计算：
 
 ```python
 def gradient(A, x, b):
@@ -27,8 +29,8 @@ def gradient(A, x, b):
 
 #definition[梯度][梯度指出函数增长最快的方向，沿负梯度移动可以寻找较小的函数值。]
 
-== 配一张图
+== 示意图
 
-图片同样由 Typst 引用，资源放在项目的 assets 目录中。
+下图中的箭头表示沿负梯度方向移动。
 
 #image("../assets/gradient.svg", alt: "凸函数曲线上的点沿负梯度方向向最低点移动")

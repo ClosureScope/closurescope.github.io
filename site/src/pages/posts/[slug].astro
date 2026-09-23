@@ -13,7 +13,6 @@ const { post } = Astro.props;
       <a class="back-link" href="/posts/">← 所有文章</a>
       <p class="eyebrow"><time datetime={post.date}>{post.date.replaceAll('-', '.')}</time></p>
       <h1>{post.title}</h1>
-      <p class="article-description">{post.description}</p>
     </header>
     <div class="prose" set:html={post.body} />
   </article>
