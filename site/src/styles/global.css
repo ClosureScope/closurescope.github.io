@@ -14,9 +14,8 @@ h1 { font-size: clamp(30px, 5vw, 46px); letter-spacing: -.045em; margin: 16px 0 
 .post-list { list-style: none; padding: 0; margin: 0; }
 .post-list li { display: grid; grid-template-columns: 105px 1fr; gap: 24px; padding: 30px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
 .post-list time { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
-.post-list h3 { font-size: 19px; margin: 0 0 8px; }
+.post-list h3 { font-size: 19px; margin: 0; }
 .post-list h3 a { text-decoration: none; }
-.post-list p { margin: 0; color: var(--muted); font-size: 14px; }
 .page-intro { padding: 28px 0 20px; }
 .page-intro h1 { margin: 0; }
 .category-section { margin-bottom: 48px; }
@@ -25,7 +24,6 @@ h1 { font-size: clamp(30px, 5vw, 46px); letter-spacing: -.045em; margin: 16px 0 
 .article-header { padding: 28px 0 20px; border-bottom: 1px solid var(--line); margin-bottom: 28px; }
 .article-meta { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; color: var(--muted); font-size: 13px; }
 .article-header h1 { font-size: clamp(28px, 4vw, 38px); margin: 12px 0 0; }
-.article-description { margin: 8px 0 0; color: var(--muted); font-size: 15px; }
 .back-link { font-size: 13px; color: var(--muted); text-decoration: none; }
 article { max-width: 760px; margin-inline: auto; }
 .prose { font-size: 17px; overflow-wrap: break-word; }

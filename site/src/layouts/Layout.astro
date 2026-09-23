@@ -1,13 +1,13 @@
 ---
 import '../styles/global.css';
-const { title = 'ClosureScope', description = 'ClosureScope 的博客。' } = Astro.props;
+const { title = 'ClosureScope' } = Astro.props;
 ---
 <!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={description} />
+    <meta name="description" content="ClosureScope 的博客。" />
     <title>{title === 'ClosureScope' ? title : `${title} · ClosureScope`}</title>
     <slot name="head" />
   </head>

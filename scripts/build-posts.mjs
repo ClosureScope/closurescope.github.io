@@ -35,9 +35,9 @@ export function buildPosts() {
       'query(<blog-meta>).map(it => it.value)',
     ]));
     if (metadata.length !== 1) throw new Error(`${name} 必须使用一次 article 模板。`);
-    const { title, date, description, category } = metadata[0];
-    if (![title, date, description, category].every(value => typeof value === 'string' && value.trim())) {
-      throw new Error(`${name} 的 title、date、description、category 必须是非空字符串。`);
+    const { title, date, category } = metadata[0];
+    if (![title, date, category].every(value => typeof value === 'string' && value.trim())) {
+      throw new Error(`${name} 的 title、date、category 必须是非空字符串。`);
     }
     if (!categories.includes(category)) {
       throw new Error(`${name} 的 category 必须是以下之一：${categories.join('、')}。`);
@@ -53,7 +53,7 @@ export function buildPosts() {
     const head = html.match(/<head\b[^>]*>([\s\S]*?)<\/head>/i)?.[1];
     if (body === undefined || head === undefined) throw new Error(`${name} 的 HTML 结构与预期不符。`);
     const styles = [...head.matchAll(/<style\b[^>]*>[\s\S]*?<\/style>/gi)].map(match => match[0]).join('\n');
-    return { slug, title, date, description, category, body, styles };
+    return { slug, title, date, category, body, styles };
   });
   posts.sort((a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug));
   // Publish the manifest atomically only after every article succeeds.

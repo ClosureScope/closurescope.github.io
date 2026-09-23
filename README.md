@@ -31,14 +31,13 @@ pnpm dev
 cp posts/hello-world.typ posts/least-squares.typ
 ```
 
-然后在这个 `.typ` 中修改 `title`、`date`（`YYYY-MM-DD`）、`description`、`category` 和正文。不需要另写 frontmatter、JSON 或注册路由。每篇文章选一个主分类：`RL`、`Optimization`、`Machine Learning`、`Mathematics` 或 `Systems`。分类名单统一写在 `scripts/categories.mjs`。
+然后在这个 `.typ` 中修改 `title`、`date`（`YYYY-MM-DD`）、`category` 和正文。不需要另写 frontmatter、JSON 或注册路由。每篇文章选一个主分类：`RL`、`Optimization`、`Machine Learning`、`Mathematics` 或 `Systems`。分类名单统一写在 `scripts/categories.mjs`。
 
 ````typst
 #import "../typst/template.typ": *
 #show: article.with(
   title: "最小二乘",
   date: "2026-09-23",
-  description: "从目标函数到梯度。",
   category: "Optimization",
 )
 
@@ -60,7 +59,7 @@ def gradient(A, x, b):
 #definition[梯度][梯度指出函数增长最快的方向。]
 ````
 
-新文章会出现在 `/posts/least-squares/`，首页按分类分组，只显示有文章的分类；分类内按日期倒序排列。旧的 `/posts/` 列表地址会跳转到首页。Typst 默认不为标题编号；模板已设置自动编号，`= ...` 显示为 `1 ...`，`== ...` 显示为 `1.1 ...`。网页中它们分别是 `h2`、`h3`，文章标题由 Astro 输出为 `h1`。Typst 独立导出的 HTML 和 PDF 会在正文开头显示 `article` 的标题；网站构建时传入 `site=true`，避免标题重复。`article` 是在原模板末尾加的博客入口，复用原模板的定义框等命令；正文可以直接用 `definition`、`theorem` 等原有命令。迁移旧笔记时，把原来的整篇文档 `#show` 改为 `#show: article.with(...)`，并补上日期、描述、分类。
+新文章会出现在 `/posts/least-squares/`，首页按分类分组，只显示有文章的分类；分类内按日期倒序排列。旧的 `/posts/` 列表地址会跳转到首页。Typst 默认不为标题编号；模板已设置自动编号，`= ...` 显示为 `1 ...`，`== ...` 显示为 `1.1 ...`。网页中它们分别是 `h2`、`h3`，文章标题由 Astro 输出为 `h1`。Typst 独立导出的 HTML 和 PDF 会在正文开头显示 `article` 的标题；网站构建时传入 `site=true`，避免标题重复。`article` 是在原模板末尾加的博客入口，复用原模板的定义框等命令；正文可以直接用 `definition`、`theorem` 等原有命令。迁移旧笔记时，把原来的整篇文档 `#show` 改为 `#show: article.with(...)`，并补上日期、分类。
 
 图片放在 `assets/`，从文章使用相对路径引用。当前 Typst 会把图片内嵌进 HTML，不需要另外复制到网站 public 目录。
 

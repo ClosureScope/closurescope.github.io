@@ -6,7 +6,7 @@ export function getStaticPaths() {
 }
 const { post } = Astro.props;
 ---
-<Layout title={post.title} description={post.description}>
+<Layout title={post.title}>
   <Fragment slot="head" set:html={post.styles} />
   <article>
     <header class="article-header">
@@ -15,7 +15,6 @@ const { post } = Astro.props;
         <span><time datetime={post.date}>{post.date.replaceAll('-', '.')}</time> · {post.category}</span>
       </div>
       <h1>{post.title}</h1>
-      <p class="article-description">{post.description}</p>
     </header>
     <div class="prose" set:html={post.body} />
   </article>

@@ -5,10 +5,7 @@ const { posts } = Astro.props;
   {posts.map(post => (
     <li>
       <time datetime={post.date}>{post.date.replaceAll('-', '.')}</time>
-      <div>
-        <h3><a href={`/posts/${post.slug}/`}>{post.title}</a></h3>
-        <p>{post.description}</p>
-      </div>
+      <h3><a href={`/posts/${post.slug}/`}>{post.title}</a></h3>
     </li>
   ))}
 </ol>

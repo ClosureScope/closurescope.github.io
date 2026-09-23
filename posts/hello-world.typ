@@ -2,7 +2,6 @@
 #show: article.with(
   title: "最小二乘问题的梯度",
   date: "2026-09-23",
-  description: "最小二乘目标函数及其梯度。",
   category: "Optimization",
 )
 
