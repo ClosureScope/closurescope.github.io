@@ -2,7 +2,7 @@
 #show: article.with(
   title: "Hello, Typst · 从一个梯度开始",
   date: "2026-09-23",
-  description: "用 Typst 记录数学推导与代码，让写作回到内容本身。",
+  description: "一个最小二乘梯度的例子。",
 )
 
 = 从一个梯度开始
@@ -32,5 +32,3 @@ def gradient(A, x, b):
 图片同样由 Typst 引用，资源放在项目的 assets 目录中。
 
 #image("../assets/gradient.svg", alt: "凸函数曲线上的点沿负梯度方向向最低点移动")
-
-下一篇文章，继续从一个小问题开始。
