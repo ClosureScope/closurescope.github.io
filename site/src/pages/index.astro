@@ -1,0 +1,17 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PostList from '../components/PostList.astro';
+import posts from '../../../.generated/posts.json';
+---
+<Layout>
+  <section class="intro">
+    <p class="eyebrow">NOTES / IDEAS / EXPLORATIONS</p>
+    <h1>把想法写清楚<span class="brand-dot">。</span></h1>
+    <p class="intro-description">从一行代码到一个推导。<br />记录学习中的问题、尝试与理解。</p>
+  </section>
+  <section aria-labelledby="latest">
+    <div class="section-heading"><h2 id="latest">最近的文章</h2><a href="/posts/">全部文章 <span aria-hidden="true">→</span></a></div>
+    <PostList posts={posts.slice(0, 5)} />
+    {posts.length === 0 && <p class="muted">第一篇文章，还在酝酿中。</p>}
+  </section>
+</Layout>

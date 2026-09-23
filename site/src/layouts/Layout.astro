@@ -1,0 +1,26 @@
+---
+import '../styles/global.css';
+const { title = '技术手记', description = '关于数学、代码与工程的记录。' } = Astro.props;
+---
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title === '技术手记' ? title : `${title} · 技术手记`}</title>
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip" href="#main">跳到正文</a>
+    <header class="site-header">
+      <a class="brand" href="/">技术手记<span class="brand-dot">.</span></a>
+      <nav aria-label="主导航">
+        <a href="/" aria-current={Astro.url.pathname === '/' ? 'page' : undefined}>首页</a>
+        <a href="/posts/" aria-current={Astro.url.pathname.startsWith('/posts/') ? 'page' : undefined}>文章</a>
+      </nav>
+    </header>
+    <main id="main"><slot /></main>
+    <footer class="site-footer"><span>保持好奇，慢慢写。</span><span>数学 · 代码 · 工程</span></footer>
+  </body>
+</html>

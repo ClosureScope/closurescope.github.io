@@ -1,0 +1,20 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import posts from '../../../../.generated/posts.json';
+export function getStaticPaths() {
+  return posts.map(post => ({ params: { slug: post.slug }, props: { post } }));
+}
+const { post } = Astro.props;
+---
+<Layout title={post.title} description={post.description}>
+  <Fragment slot="head" set:html={post.styles} />
+  <article>
+    <header class="article-header">
+      <a class="back-link" href="/posts/">← 所有文章</a>
+      <p class="eyebrow"><time datetime={post.date}>{post.date.replaceAll('-', '.')}</time></p>
+      <h1>{post.title}</h1>
+      <p class="article-description">{post.description}</p>
+    </header>
+    <div class="prose" set:html={post.body} />
+  </article>
+</Layout>

@@ -1,0 +1,9 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PostList from '../../components/PostList.astro';
+import posts from '../../../../.generated/posts.json';
+---
+<Layout title="所有文章">
+  <section class="page-intro"><p class="eyebrow">ARCHIVE</p><h1>所有文章<span class="brand-dot">。</span></h1><p class="muted">共 {posts.length} 篇记录，按时间排列。</p></section>
+  <PostList posts={posts} />
+</Layout>

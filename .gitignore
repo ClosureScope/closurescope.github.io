@@ -1,0 +1,13 @@
+node_modules/
+.tools/
+.generated/
+site/.astro/
+site/dist/
+.pnpm-store/
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
+posts/*.pdf
+template.pdf

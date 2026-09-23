@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="260" viewBox="0 0 720 260">
+  <rect width="720" height="260" rx="16" fill="#f0f5f3"/>
+  <path d="M100 210H640 M130 220V35" fill="none" stroke="#9aaea5" stroke-width="2"/>
+  <path d="M190 48 Q380 370 570 48" fill="none" stroke="#266552" stroke-width="4"/>
+  <circle cx="513" cy="130" r="7" fill="#bc5b32"/>
+  <path d="M501 142L453 180L466 154 M453 180L481 176" fill="none" stroke="#bc5b32" stroke-width="3"/>
+  <text x="536" y="123" font-family="sans-serif" font-size="18" fill="#624431">x</text>
+  <text x="362" y="244" font-family="sans-serif" font-size="16" fill="#266552">minimum</text>
+</svg>
