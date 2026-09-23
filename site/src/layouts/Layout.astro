@@ -15,10 +15,6 @@ const { title = '技术手记', description = 'ClosureScope 的博客。' } = As
     <a class="skip" href="#main">跳到正文</a>
     <header class="site-header">
       <a class="brand" href="/">技术手记<span class="brand-dot">.</span></a>
-      <nav aria-label="主导航">
-        <a href="/" aria-current={Astro.url.pathname === '/' ? 'page' : undefined}>首页</a>
-        <a href="/posts/" aria-current={Astro.url.pathname.startsWith('/posts/') ? 'page' : undefined}>文章</a>
-      </nav>
     </header>
     <main id="main"><slot /></main>
     <footer class="site-footer">ClosureScope</footer>

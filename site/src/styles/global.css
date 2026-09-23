@@ -6,21 +6,13 @@ a { color: inherit; text-underline-offset: .24em; }
 a:hover { color: var(--accent); }
 a:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
 .site-header, main, .site-footer { width: min(880px, calc(100% - 48px)); margin-inline: auto; }
-.site-header { display: flex; align-items: center; justify-content: space-between; padding-block: 30px; border-bottom: 1px solid var(--line); }
+.site-header { padding-block: 30px; border-bottom: 1px solid var(--line); }
 .brand { font-weight: 750; font-size: 22px; letter-spacing: -.04em; text-decoration: none; }
 .brand-dot { color: #b7603a; }
-nav { display: flex; gap: 28px; font-size: 14px; }
-nav a { text-decoration: none; color: var(--muted); }
-nav a[aria-current="page"] { color: var(--ink); text-decoration: underline; }
 main { min-height: 65vh; padding-bottom: 88px; }
-.intro { padding: 64px 0 48px; }
-.intro h1 { margin: 0; }
 .eyebrow { color: var(--accent); font-size: 11px; font-weight: 650; letter-spacing: .14em; }
 h1, h2, h3 { line-height: 1.4; overflow-wrap: anywhere; }
 h1 { font-size: clamp(30px, 5vw, 46px); letter-spacing: -.045em; margin: 16px 0 22px; }
-.section-heading { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
-.section-heading h2 { font-size: 16px; margin: 0; }
-.section-heading a { color: var(--muted); font-size: 13px; text-decoration: none; }
 .post-list { list-style: none; padding: 0; margin: 0; }
 .post-list li { display: grid; grid-template-columns: 105px 1fr; gap: 24px; padding: 30px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
 .post-list time { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -53,7 +45,6 @@ article { max-width: 760px; margin-inline: auto; }
 .skip:focus { top: 0; }
 @media (max-width: 600px) {
   .site-header, main, .site-footer { width: calc(100% - 36px); }
-  .intro { padding: 48px 0 36px; }
   .post-list li { grid-template-columns: 1fr; gap: 8px; }
   .post-list h2 { font-size: 18px; }
   .prose { font-size: 16px; }

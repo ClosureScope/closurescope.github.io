@@ -6,7 +6,7 @@
 posts/*.typ + typst/template.typ（原有笔记模板）+ assets/*
     ↓ Typst 0.15.1（实验性 HTML 导出）
 .generated/*.html + posts.json
-    ↓ Astro（首页、文章列表、导航、样式）
+    ↓ Astro（首页文章列表、文章页、样式）
 site/dist/（可部署的静态网站）
 ```
 
@@ -59,7 +59,7 @@ def gradient(A, x, b):
 #definition[梯度][梯度指出函数增长最快的方向。]
 ````
 
-新文章会出现在 `/posts/least-squares/`，列表按日期倒序排列。Typst 默认不为标题编号；模板已设置自动编号，`= ...` 显示为 `1 ...`，`== ...` 显示为 `1.1 ...`。网页中它们分别是 `h2`、`h3`，文章标题由 Astro 输出为 `h1`。Typst 独立导出的 HTML 和 PDF 会在正文开头显示 `article` 的标题；网站构建时传入 `site=true`，避免标题重复。`article` 是在原模板末尾加的博客入口，复用原模板的定义框等命令；正文可以直接用 `definition`、`theorem` 等原有命令。迁移旧笔记时，把原来的整篇文档 `#show` 改为 `#show: article.with(...)`，并补上日期、描述。
+新文章会出现在 `/posts/least-squares/`，首页列出全部文章，按日期倒序排列。旧的 `/posts/` 列表地址会跳转到首页。Typst 默认不为标题编号；模板已设置自动编号，`= ...` 显示为 `1 ...`，`== ...` 显示为 `1.1 ...`。网页中它们分别是 `h2`、`h3`，文章标题由 Astro 输出为 `h1`。Typst 独立导出的 HTML 和 PDF 会在正文开头显示 `article` 的标题；网站构建时传入 `site=true`，避免标题重复。`article` 是在原模板末尾加的博客入口，复用原模板的定义框等命令；正文可以直接用 `definition`、`theorem` 等原有命令。迁移旧笔记时，把原来的整篇文档 `#show` 改为 `#show: article.with(...)`，并补上日期、描述。
 
 图片放在 `assets/`，从文章使用相对路径引用。当前 Typst 会把图片内嵌进 HTML，不需要另外复制到网站 public 目录。
 
@@ -94,7 +94,7 @@ typst compile --root . posts/hello-world.typ /tmp/hello-world.pdf # 可选：直
 | `assets/` | 文章图片 |
 | `scripts/build-posts.mjs` | 调用 Typst，读取元信息，提取 HTML 正文和公式样式 |
 | `scripts/typst-plugin.mjs` | 复用 Vite 文件监听与刷新机制 |
-| `site/src/pages/` | 首页、文章列表与文章路由 |
+| `site/src/pages/` | 首页与文章路由 |
 | `site/src/styles/global.css` | 网站排版和代码样式 |
 | `site/public/fonts/` | 网页代码字体及授权文件 |
 | `.generated/` | 中间产物，自动生成，不要编辑或提交 |
@@ -147,10 +147,10 @@ Git 已初始化到 `main`；是否已连接远程仓库和发布，请以 `git 
 ## 本次验证
 
 - Typst 0.15.1 直接编译示例 HTML 与 PDF 成功，公式使用内置 `nabla`，`definition` 来自你的模板。
-- `pnpm dev` 成功启动，首页、列表、文章页均返回 HTTP 200。
+- `pnpm dev` 成功启动，首页文章列表和文章页均返回 HTTP 200。
 - Chromium 实测桌面和 390px 手机宽度：公式、Python 高亮、缩进和图片正常，页面无横向溢出。
 - 实测修改正文自动刷新、新增/删除文章更新列表和路由、编译错误遮罩及修复恢复。
-- `pnpm build` 成功生成 3 个静态页面；`pnpm preview` 的生产页面也通过 Chromium 显示检查。
+- `pnpm build` 成功生成首页、旧地址跳转页和示例文章页；`pnpm preview` 的生产页面也通过 Chromium 显示检查。
 - 字体检查文章的 PDF 确认嵌入 JetBrains Mono 和 FandolKai；示例文章仍导出为一页 PDF。
 
 浏览器验证工具临时安装在 `/tmp/blog-browser-check/`，未加入项目依赖。VS Code/Tinymist 可能在 `posts/` 生成 PDF，已忽略这类产物。

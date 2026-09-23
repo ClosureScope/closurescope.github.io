@@ -4,12 +4,7 @@ import PostList from '../components/PostList.astro';
 import posts from '../../../.generated/posts.json';
 ---
 <Layout>
-  <section class="intro">
-    <h1>技术手记</h1>
-  </section>
-  <section aria-labelledby="latest">
-    <div class="section-heading"><h2 id="latest">最近的文章</h2><a href="/posts/">全部文章 <span aria-hidden="true">→</span></a></div>
-    <PostList posts={posts.slice(0, 5)} />
-    {posts.length === 0 && <p class="muted">暂无文章。</p>}
-  </section>
+  <section class="page-intro"><h1>文章</h1></section>
+  <PostList posts={posts} />
+  {posts.length === 0 && <p class="muted">暂无文章。</p>}
 </Layout>

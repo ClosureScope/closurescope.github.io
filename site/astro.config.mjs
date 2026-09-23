@@ -8,6 +8,7 @@ export default defineConfig({
   site: 'https://closurescope.github.io',
   output: 'static',
   trailingSlash: 'always',
+  redirects: { '/posts': '/' },
   devToolbar: { enabled: false },
   vite: { plugins: [typstPlugin()] },
 });
