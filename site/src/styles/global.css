@@ -8,7 +8,6 @@ a:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
 .site-header, main { width: min(880px, calc(100% - 48px)); margin-inline: auto; }
 .site-header { padding-block: 30px; border-bottom: 1px solid var(--line); }
 .brand { font-weight: 750; font-size: 22px; letter-spacing: -.04em; text-decoration: none; }
-.brand-dot { color: #b7603a; }
 main { min-height: 65vh; padding-bottom: 88px; }
 h1, h2, h3 { line-height: 1.4; overflow-wrap: anywhere; }
 h1 { font-size: clamp(30px, 5vw, 46px); letter-spacing: -.045em; margin: 16px 0 22px; }
