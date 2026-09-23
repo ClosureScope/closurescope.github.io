@@ -5,7 +5,7 @@ body { margin: 0; background: var(--paper); color: var(--ink); font-family: "Not
 a { color: inherit; text-underline-offset: .24em; }
 a:hover { color: var(--accent); }
 a:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
-.site-header, main, .site-footer { width: min(880px, calc(100% - 48px)); margin-inline: auto; }
+.site-header, main { width: min(880px, calc(100% - 48px)); margin-inline: auto; }
 .site-header { padding-block: 30px; border-bottom: 1px solid var(--line); }
 .brand { font-weight: 750; font-size: 22px; letter-spacing: -.04em; text-decoration: none; }
 .brand-dot { color: #b7603a; }
@@ -41,11 +41,10 @@ article { max-width: 760px; margin-inline: auto; }
 .prose blockquote { border-left: 3px solid var(--accent); margin-inline: 0; padding-left: 20px; color: var(--muted); }
 .prose table { border-collapse: collapse; max-width: 100%; }
 .prose td, .prose th { padding: 8px 14px; border: 1px solid var(--line); }
-.site-footer { border-top: 1px solid var(--line); padding-block: 24px; color: var(--muted); font-size: 12px; }
 .skip { position: absolute; top: -100px; padding: 8px; background: var(--paper); }
 .skip:focus { top: 0; }
 @media (max-width: 600px) {
-  .site-header, main, .site-footer { width: calc(100% - 36px); }
+  .site-header, main { width: calc(100% - 36px); }
   .post-list li { grid-template-columns: 1fr; gap: 8px; }
   .post-list h3 { font-size: 18px; }
   .prose { font-size: 16px; }

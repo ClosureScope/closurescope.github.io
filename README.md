@@ -1,4 +1,4 @@
-# 技术手记：Typst-first 博客
+# ClosureScope 博客
 
 文章全部写在 `.typ` 中，使用 Typst 原生数学语法、标题、代码块和图片。文章统一引用你提供的 `typst/template.typ`，保留 `frame-it`、`tablem`、`definition` 等命令。Astro 只负责网站外壳；不使用 Markdown/MDX、LaTeX、KaTeX 或 MathJax。
 
