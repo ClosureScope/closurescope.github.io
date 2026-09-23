@@ -1,7 +1,5 @@
 export const categories = [
-  'RL',
+  'Reinforcement Learning',
   'Optimization',
-  'Machine Learning',
-  'Mathematics',
-  'Systems',
+  'Other'
 ];
