@@ -1,7 +1,12 @@
+@font-face { font-family: "Libertinus Serif"; src: url("/fonts/LibertinusSerif-Regular.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: "Libertinus Serif"; src: url("/fonts/LibertinusSerif-Bold.woff2") format("woff2"); font-style: normal; font-weight: 700 900; font-display: swap; }
+@font-face { font-family: "Noto Serif SC"; src: url("/fonts/NotoSerifSC-variable.woff2") format("woff2"); font-style: normal; font-weight: 200 900; font-display: swap; }
+@font-face { font-family: "Noto Sans SC"; src: url("/fonts/NotoSansSC-variable.woff2") format("woff2"); font-style: normal; font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "FandolKai"; src: url("/fonts/FandolKai-Regular.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: swap; }
 @font-face { font-family: "JetBrains Mono"; src: url("/fonts/JetBrainsMono-Regular.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: swap; }
 :root { color-scheme: light; --paper: #fbfaf7; --ink: #263a32; --muted: #6b756f; --accent: #326c55; --line: #dedfd5; }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--paper); color: var(--ink); font-family: "Noto Sans SC", "Noto Sans CJK SC", system-ui, sans-serif; line-height: 1.8; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: "Libertinus Serif", "Noto Serif SC", "Noto Serif CJK SC", serif; line-height: 1.8; }
 a { color: inherit; text-underline-offset: .24em; }
 a:hover { color: var(--accent); }
 a:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
@@ -32,6 +37,8 @@ article { max-width: 760px; margin-inline: auto; }
 .prose p { margin-block: 1.3em; }
 .prose pre { padding: 22px 24px; border: 1px solid var(--line); border-radius: 8px; background: #f2f3ef; overflow-x: auto; line-height: 1.7; }
 .prose code { font-family: "JetBrains Mono", "Noto Sans SC", "Noto Sans CJK SC", monospace; font-size: .85em; font-variant-ligatures: none; }
+.prose strong { font-family: "Libertinus Serif", "Noto Sans SC", "Noto Sans CJK SC", sans-serif; font-weight: 400; }
+.prose em { font-family: "Libertinus Serif", "FandolKai", "Noto Serif SC", serif; font-style: normal; }
 .prose :not(pre) > code { background: #f2f3ef; padding: .15em .3em; border-radius: 3px; }
 .prose img, .prose svg { max-width: 100%; height: auto; }
 .prose img { margin: 24px auto; }

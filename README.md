@@ -97,7 +97,7 @@ typst compile --root . posts/hello-world.typ /tmp/hello-world.pdf # 可选：直
 | `scripts/typst-plugin.mjs` | 复用 Vite 文件监听与刷新机制 |
 | `site/src/pages/` | 首页与文章路由 |
 | `site/src/styles/global.css` | 网站排版和代码样式 |
-| `site/public/fonts/` | 网页代码字体及授权文件 |
+| `site/public/fonts/` | 网页正文、强调文字、代码字体及授权文件 |
 | `.generated/` | 中间产物，自动生成，不要编辑或提交 |
 | `site/dist/` | 生产产物，不提交 |
 
@@ -113,9 +113,9 @@ typst compile --root . posts/hello-world.typ /tmp/hello-world.pdf # 可选：直
 
 代码字体选用 [JetBrains Mono 2.304](https://github.com/JetBrains/JetBrainsMono/releases/tag/v2.304)，授权为 [SIL OFL 1.1](https://github.com/JetBrains/JetBrainsMono/blob/master/OFL.txt)。TTF 已安装在本机 `~/.local/share/fonts/`；网页所需的 WOFF2 和授权文件在 `site/public/fonts/`，读者无需自行安装。代码字体规则直接写在共享的 `typst/template.typ` 的 `article` 函数内，Typst 的代码块和行内 `raw` 均使用它。中文代码字符回退到 Noto Sans SC，与旧笔记的字体顺序一致；若文章需要严格按字符列对齐，应避免混用不同字体的中英文字符。
 
-旧笔记中的 [Noto Sans SC](https://github.com/google/fonts/tree/main/ofl/notosanssc) 和 [Noto Serif SC](https://github.com/google/fonts/tree/main/ofl/notoserifsc) 现已从 Google Fonts 官方文件安装到本机 `~/.local/share/fonts/`，均使用 SIL OFL 1.1 授权。共享模板的 `font-hei`、`font-song` 已恢复这两个原始字体名。网页 CSS 也优先选用 Noto Sans SC，但没有把约 43 MB 的中文字体文件打包进网站；访客若未安装，会使用后续的系统字体。
+旧笔记中的 [Noto Sans SC](https://github.com/google/fonts/tree/main/ofl/notosanssc) 和 [Noto Serif SC](https://github.com/google/fonts/tree/main/ofl/notoserifsc) 现已从 Google Fonts 官方文件安装到本机 `~/.local/share/fonts/`，均使用 SIL OFL 1.1 授权。共享模板的 `font-hei`、`font-song` 已恢复这两个原始字体名。网站也随站点分发其 WOFF2 版本，正文中文使用 Noto Serif SC，强调和代码中的中文使用 Noto Sans SC。英文正文使用 [Libertinus Serif](https://github.com/alerque/libertinus)，与 Typst 模板的字体顺序一致。完整中文字体使 `site/public/fonts/` 约为 23 MB；首次访问需要下载所用的字体，此后由浏览器缓存。
 
-楷体使用 CTAN 的 [FandolKai](https://ctan.org/pkg/fandol)，官方 README 标为 GPL 加字体例外。`FandolKai-Regular.otf` 已安装在本机 `~/.local/share/fonts/`，供 Typst 导出 PDF 的强调文字使用。新 WSL 环境需要重新安装上述四款本地字体，运行 `fc-cache -f ~/.local/share/fonts`；可用 `fc-match 'JetBrains Mono'`、`fc-match 'Noto Sans SC'`、`fc-match 'Noto Serif SC'` 和 `fc-match FandolKai` 检查。
+楷体使用 CTAN 的 [FandolKai](https://ctan.org/pkg/fandol)，官方 README 标为 GPL 加字体例外。`FandolKai-Regular.otf` 已安装在本机 `~/.local/share/fonts/`，网站也分发其 WOFF2 版本，供强调文字使用。新 WSL 环境需要重新安装上述四款本地字体，运行 `fc-cache -f ~/.local/share/fonts`；可用 `fc-match 'JetBrains Mono'`、`fc-match 'Noto Sans SC'`、`fc-match 'Noto Serif SC'` 和 `fc-match FandolKai` 检查。
 
 迁移到其他机器时，先安装上述 Node、pnpm 和 [Typst 0.15.1 官方发行版](https://github.com/typst/typst/releases/tag/v0.15.1)，确保命令在 PATH 中，再运行：
 
@@ -139,7 +139,7 @@ pnpm dev
 - 图片内嵌会增大 HTML；少量技术插图足够，未来图片较多时再考虑独立资源输出。
 - Typst 尚不直接输出 HTML 片段。本项目针对固定版本的完整 HTML 提取 body 与 style，不解释 `.typ` 源码；升级编译器后需要重新验证输出结构。
 - 网站标题与导航由 Astro 显示；独立导出的 Typst HTML 和 PDF 在正文开头显示文章标题，没有扉页或自动目录。Typst 的字体设置不会自动变成网页 CSS，网页正文使用 `site/src/styles/global.css` 中的字体。`frame-it` 的 `definition` 已实际验证可导出 HTML；其他宏包功能需按需逐一验证。
-- 旧模板使用的 `Noto Serif SC`、`Noto Sans SC`、`FandolKai` 已安装并恢复原名。网页强调文字仍由网站 CSS 排版，Typst 的字体设置不会自动变成 HTML 样式。
+- 旧模板使用的 `Libertinus Serif`、`Noto Serif SC`、`Noto Sans SC`、`FandolKai` 已通过网页 CSS 映射到随站点分发的字体。网页与 PDF 的行距、字距、分页和数学排版仍可能不同。
 - 开发时任一源文件变化会重编译全部文章，适合初期的小博客；数量明显增加后再做增量构建。
 - 当前只发布 `posts/` 直属 `.typ`，没有草稿开关；辅助 Typst 文件放到 `typst/`。文章内容视为本人可信内容。
 
