@@ -10,8 +10,10 @@ const { post } = Astro.props;
   <Fragment slot="head" set:html={post.styles} />
   <article>
     <header class="article-header">
-      <a class="back-link" href="/">← 返回首页</a>
-      <p class="article-meta"><time datetime={post.date}>{post.date.replaceAll('-', '.')}</time><span>{post.category}</span></p>
+      <div class="article-meta">
+        <span><time datetime={post.date}>{post.date.replaceAll('-', '.')}</time> · {post.category}</span>
+        <a class="back-link" href="/">← 返回首页</a>
+      </div>
       <h1>{post.title}</h1>
     </header>
     <div class="prose" set:html={post.body} />

@@ -6,7 +6,7 @@ a { color: inherit; text-underline-offset: .24em; }
 a:hover { color: var(--accent); }
 a:focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
 .site-header, main { width: min(880px, calc(100% - 48px)); margin-inline: auto; }
-.site-header { padding-block: 30px; border-bottom: 1px solid var(--line); }
+.site-header { padding-block: 22px; border-bottom: 1px solid var(--line); }
 .brand { font-weight: 750; font-size: 22px; letter-spacing: -.04em; text-decoration: none; }
 main { min-height: 65vh; padding-bottom: 88px; }
 h1, h2, h3 { line-height: 1.4; overflow-wrap: anywhere; }
@@ -17,13 +17,14 @@ h1 { font-size: clamp(30px, 5vw, 46px); letter-spacing: -.045em; margin: 16px 0 
 .post-list h3 { font-size: 19px; margin: 0 0 8px; }
 .post-list h3 a { text-decoration: none; }
 .post-list p { margin: 0; color: var(--muted); font-size: 14px; }
-.page-intro { padding: 64px 0 32px; }
+.page-intro { padding: 28px 0 20px; }
+.page-intro h1 { margin: 0; }
 .category-section { margin-bottom: 48px; }
 .category-section > h2 { margin: 0; padding-bottom: 8px; border-bottom: 1px solid var(--line); font-size: 16px; font-weight: 650; }
 .muted { color: var(--muted); }
-.article-header { padding: 44px 0 30px; border-bottom: 1px solid var(--line); margin-bottom: 38px; }
-.article-meta { display: flex; gap: 20px; margin-top: 32px; color: var(--muted); font-size: 13px; }
-.article-header h1 { font-size: clamp(28px, 4vw, 38px); }
+.article-header { padding: 28px 0 20px; border-bottom: 1px solid var(--line); margin-bottom: 28px; }
+.article-meta { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; color: var(--muted); font-size: 13px; }
+.article-header h1 { font-size: clamp(28px, 4vw, 38px); margin: 12px 0 0; }
 .back-link { font-size: 13px; color: var(--muted); text-decoration: none; }
 article { max-width: 760px; margin-inline: auto; }
 .prose { font-size: 17px; overflow-wrap: break-word; }
