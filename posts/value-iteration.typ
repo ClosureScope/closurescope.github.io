@@ -7,24 +7,24 @@
 
 = Bellman Expectation Equation
 #definition[Value Function][
-  $ V^pi (s_0) = EE_(tau) [R(tau)] = EE_(tau)[sum_(t=0)^infinity gamma^t r(s_t, a_t)] $
+  $ V^pi (s_0) = EE_(tau) [G(tau)] = EE_(tau)[sum_(t=0)^infinity gamma^t R_t] $
 ]
 Rewrite $V^pi (s_0)$ in a recursive way.
 
 $
-  V^pi (s_0) & = EE_(a_0)[ EE_(s_1) [EE_(tau_1)[r(s_0, a_0) + gamma sum_(t=1)^infinity gamma^(t-1) r(s_t, a_t)]]] \
-             & = EE_(a_0)[r(s_0, a_0) + gamma EE_(s_1) [EE_(tau_1) [sum_(t=1)^infinity gamma^(t-1) r(s_t, a_t)]]] \
-             & = EE_(a_0)[r(s_0, a_0) + gamma EE_(s_1) [V^pi (s_1)] ]
+  V^pi (s_0) & = EE_(a_0)[ EE_(s_1) [EE_(tau_1)[R(s_0, a_0) + gamma sum_(t=1)^infinity gamma^(t-1) R_t]]] \
+             & = EE_(a_0)[R(s_0, a_0) + gamma EE_(s_1) [EE_(tau_1) [G(tau_1)]]] \
+             & = EE_(a_0)[R(s_0, a_0) + gamma EE_(s_1) [V^pi (s_1)] ]
 $
 
 We thus derive
 #theorem[Bellman Expectation Equation][
-  $ V^pi (s_0) = EE_(a_0)[r(s_0, a_0) + gamma EE_(s_1) [V^pi (s_1)] ] $
+  $ V^pi (s_0) = EE_(a_0)[R(s_0, a_0) + gamma EE_(s_1) [V^pi (s_1)] ] $
 ]
 = Policy Evaluation
 == Bellman Expectation Operator and Contraction Property
 #definition[Bellman Expectation Operator][
-  $ (T^pi V)(s) = EE_a [r(s,a) + gamma EE_(s^') [V(s^')]] $
+  $ (T^pi V)(s) = EE_a [R(s,a) + gamma EE_(s^') [V(s^')]] $
 ]
 #proposition[Contraction Property][
   $ norm(T^pi V - T^pi W)_infinity <= gamma norm(V - W)_infinity $
@@ -113,7 +113,7 @@ policy has not yet been established
   $
     V^* (s)
     = max_(a in cal(A)) (
-      r(s, a) + gamma EE_(s^') [V^* (s^')]
+      R(s, a) + gamma EE_(s^') [V^* (s^')]
     )
   $
 ]
@@ -127,7 +127,7 @@ We will leave the proof in the next section.
   $
     (T^* V)(s)
     = max_(a in cal(A)) (
-      r(s, a) + gamma EE_(s^') [V(s^')]
+      R(s, a) + gamma EE_(s^') [V(s^')]
     )
   $
 ]
@@ -190,14 +190,14 @@ with the optimal value function $V^*$.
 
   $
     pi (s) in "argmax"_(a in cal(A)) (
-      r(s, a) + gamma EE_(s^') [V(s^')]
+      R(s, a) + gamma EE_(s^') [V(s^')]
     )
   $
 
   Such policy exists since the action space is finite so that the maximum
   is attained in every state. Thus
   $
-    (T^pi V)(s) & = r(s, pi(s)) + gamma EE_(s^') [V(s^')]
+    (T^pi V)(s) & = R(s, pi(s)) + gamma EE_(s^') [V(s^')]
                   = (T^* V)(s)
                   = V(s)
   $
@@ -220,14 +220,14 @@ with the optimal value function $V^*$.
   Since $V = T^* V$, for every state $s$ and action $a$,
 
   $
-    V(s) >= r(s, a) + gamma EE_(s^') [V(s^')]
+    V(s) >= R(s, a) + gamma EE_(s^') [V(s^')]
   $
 
   Consider an arbitrary admissible policy $mu in cal(M)$. Apply the inequality recursively at each step.
 
   $
     V(s_0) >= EE_(tau) [
-      sum_(t=0)^(n-1) gamma^t r(s_t, a_t)
+      sum_(t=0)^(n-1) gamma^t R_t
       + gamma^n V(s_n)
     ]
   $
@@ -236,9 +236,7 @@ with the optimal value function $V^*$.
   Taking the limit as $n -> infinity$ gives
 
   $
-    V(s_0) & >= EE_(tau) [
-               sum_(t=0)^infinity gamma^t r(s_t, a_t)
-             ]
+    V(s_0) & >= EE_(tau) [G(tau)]
              = V^mu (s_0)
   $
 
