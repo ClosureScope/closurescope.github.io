@@ -7,13 +7,13 @@
 
 = Bellman Expectation Equation
 #definition[Value Function][
-  $ V^pi (s_0) = EE_(tau) [G(tau)] = EE_(tau)[sum_(t=0)^infinity gamma^t R_t] $
+  $ V^pi (s_0) = EE_(tau) [G_0] = EE_(tau)[sum_(t=0)^infinity gamma^t R_t] $
 ]
 Rewrite $V^pi (s_0)$ in a recursive way.
 
 $
   V^pi (s_0) & = EE_(a_0)[ EE_(s_1) [EE_(tau_1)[R(s_0, a_0) + gamma sum_(t=1)^infinity gamma^(t-1) R_t]]] \
-             & = EE_(a_0)[R(s_0, a_0) + gamma EE_(s_1) [EE_(tau_1) [G(tau_1)]]] \
+             & = EE_(a_0)[R(s_0, a_0) + gamma EE_(s_1) [EE_(tau_1) [G_1]]] \
              & = EE_(a_0)[R(s_0, a_0) + gamma EE_(s_1) [V^pi (s_1)] ]
 $
 
@@ -236,7 +236,7 @@ with the optimal value function $V^*$.
   Taking the limit as $n -> infinity$ gives
 
   $
-    V(s_0) & >= EE_(tau) [G(tau)]
+    V(s_0) & >= EE_(tau) [G_0]
              = V^mu (s_0)
   $
 
