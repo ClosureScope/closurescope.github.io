@@ -35,6 +35,14 @@ jobs:
           typst-version: 0.15.1
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: scripts/font-requirements.txt
+      - name: Install font tools
+        run: python -m pip install -r scripts/font-requirements.txt
       - name: Build site
         run: pnpm build
       - name: Configure Pages

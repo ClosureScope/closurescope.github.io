@@ -93,6 +93,7 @@ typst compile --root . posts/hello-world.typ /tmp/hello-world.pdf # 可选：直
 | `typst/template.typ` | 你提供的笔记模板，附加 `article` 博客入口与元信息 |
 | `assets/` | 文章图片 |
 | `scripts/build-posts.mjs` | 调用 Typst，读取元信息，提取 HTML 正文和公式样式 |
+| `scripts/build-fonts.py` | 从编译后的 HTML 自动生成中文字体子集，保留可变字重 |
 | `scripts/categories.mjs` | 可用的文章分类及其显示顺序 |
 | `scripts/typst-plugin.mjs` | 复用 Vite 文件监听与刷新机制 |
 | `site/src/pages/` | 首页与文章路由 |
@@ -113,7 +114,9 @@ typst compile --root . posts/hello-world.typ /tmp/hello-world.pdf # 可选：直
 
 代码字体选用 [JetBrains Mono 2.304](https://github.com/JetBrains/JetBrainsMono/releases/tag/v2.304)，授权为 [SIL OFL 1.1](https://github.com/JetBrains/JetBrainsMono/blob/master/OFL.txt)。TTF 已安装在本机 `~/.local/share/fonts/`；网页所需的 WOFF2 和授权文件在 `site/public/fonts/`，读者无需自行安装。代码字体规则直接写在共享的 `typst/template.typ` 的 `article` 函数内，Typst 的代码块和行内 `raw` 均使用它。中文代码字符回退到 Noto Sans SC，与旧笔记的字体顺序一致；若文章需要严格按字符列对齐，应避免混用不同字体的中英文字符。
 
-旧笔记中的 [Noto Sans SC](https://github.com/google/fonts/tree/main/ofl/notosanssc) 和 [Noto Serif SC](https://github.com/google/fonts/tree/main/ofl/notoserifsc) 现已从 Google Fonts 官方文件安装到本机 `~/.local/share/fonts/`，均使用 SIL OFL 1.1 授权。共享模板的 `font-hei`、`font-song` 已恢复这两个原始字体名。网站也随站点分发其 WOFF2 版本，正文中文使用 Noto Serif SC，强调和代码中的中文使用 Noto Sans SC。英文正文使用 [Libertinus Serif](https://github.com/alerque/libertinus)，与 Typst 模板的字体顺序一致。完整中文字体使 `site/public/fonts/` 约为 23 MB；首次访问需要下载所用的字体，此后由浏览器缓存。
+旧笔记中的 [Noto Sans SC](https://github.com/google/fonts/tree/main/ofl/notosanssc) 和 [Noto Serif SC](https://github.com/google/fonts/tree/main/ofl/notoserifsc) 现已从 Google Fonts 官方文件安装到本机 `~/.local/share/fonts/`，均使用 SIL OFL 1.1 授权。正文中文使用 Noto Serif SC，强调和代码中的中文使用 Noto Sans SC。构建时从渲染后的文章、标题和导航提取字符，生成共享的 WOFF2 子集；新增字符会自动加入，可变字重保留。完整字体仍作为构建输入保存在 `site/public/fonts/`，网页只引用生成的子集，不下载完整中文字体。生成文件位于被忽略的 `site/public/fonts/subsets/`，文件名带内容哈希供浏览器缓存。
+
+英文使用 Typst 0.15.1 资产包中的 Libertinus Serif Regular/Bold/Italic/BoldItalic；数学使用同包的 New Computer Modern Math Book/Bold。来源、转换方法和授权见 `site/public/fonts/README.md`。普通数学的 CSS 400 对应 Book 字形，不是改用较细的 Regular。`strong` 映射为 700：Typst 的默认 strong 会在 regular 基础上增加 300。`em` 的英文使用真斜体，中文使用直立楷体。
 
 楷体使用 CTAN 的 [FandolKai](https://ctan.org/pkg/fandol)，官方 README 标为 GPL 加字体例外。`FandolKai-Regular.otf` 已安装在本机 `~/.local/share/fonts/`，网站也分发其 WOFF2 版本，供强调文字使用。新 WSL 环境需要重新安装上述四款本地字体，运行 `fc-cache -f ~/.local/share/fonts`；可用 `fc-match 'JetBrains Mono'`、`fc-match 'Noto Sans SC'`、`fc-match 'Noto Serif SC'` 和 `fc-match FandolKai` 检查。
 
@@ -121,10 +124,14 @@ typst compile --root . posts/hello-world.typ /tmp/hello-world.pdf # 可选：直
 
 ```bash
 pnpm install --frozen-lockfile
+python3 -m venv .tools/fonttools
+.tools/fonttools/bin/python -m pip install -r scripts/font-requirements.txt
 pnpm dev
 ```
 
 也可用 `TYPST_BIN=/absolute/path/to/typst pnpm dev` 指定编译器。
+
+字体子集构建需要 Python 3.12+ 和 `scripts/font-requirements.txt` 固定的依赖。默认优先使用 `.tools/fonttools/bin/python`，否则使用 `python3`；可用 `FONTTOOLS_PYTHON` 指定其他环境。GitHub Actions 自动安装这些依赖。第一次生成子集较慢，后续构建按字体和字符集合缓存；开发时保留旧哈希，避免已打开的页面加载字体时遇到 404。无需手工维护字符表。
 
 ## HTML 实测与限制
 
@@ -135,17 +142,26 @@ pnpm dev
 当前边界：
 
 - HTML 不等同于 PDF 页面排版；分页、精确位置、复杂绘图或某些第三方包可能不支持，需要逐项验证。没有尝试把 PDF 模板强行搬进网页。
-- 数学由浏览器原生 MathML 渲染；应使用现代 Chrome/Edge、Firefox 或 Safari。不同系统的数学字体会影响细节，本版没有绑定网络字体。
+- 数学由浏览器原生 MathML 渲染；应使用现代 Chrome/Edge、Firefox 或 Safari。数学字体已随站点提供，但浏览器与 Typst 的公式布局算法仍可能有细节差异。
 - 图片内嵌会增大 HTML；少量技术插图足够，未来图片较多时再考虑独立资源输出。
 - Typst 尚不直接输出 HTML 片段。本项目针对固定版本的完整 HTML 提取 body 与 style，不解释 `.typ` 源码；升级编译器后需要重新验证输出结构。
 - 网站标题与导航由 Astro 显示；独立导出的 Typst HTML 和 PDF 在正文开头显示文章标题，没有扉页或自动目录。Typst 的字体设置不会自动变成网页 CSS，网页正文使用 `site/src/styles/global.css` 中的字体。`frame-it` 的 `definition` 已实际验证可导出 HTML；其他宏包功能需按需逐一验证。
 - 旧模板使用的 `Libertinus Serif`、`Noto Serif SC`、`Noto Sans SC`、`FandolKai` 已通过网页 CSS 映射到随站点分发的字体。网页与 PDF 的行距、字距、分页和数学排版仍可能不同。
+- 文章采用黑字白底，正文 17px（手机 16px），行宽约 41.23em，对应默认 A4、25mm 页边距和 11pt 正文的比例；标题比例、段间距和公式留白向本地模板靠拢。网页保留响应式布局，不强制复制 PDF 分页；比较时应对齐显示字号，而不是仅比较两个查看器的缩放百分比。
 - 开发时任一源文件变化会重编译全部文章，适合初期的小博客；数量明显增加后再做增量构建。
 - 当前只发布 `posts/` 直属 `.typ`，没有草稿开关；辅助 Typst 文件放到 `typst/`。文章内容视为本人可信内容。
 
 Git 已初始化到 `main`；是否已连接远程仓库和发布，请以 `git remote -v` 与 GitHub Actions 的运行结果为准。
 
-## 本次验证
+## 字体对齐验证
+
+- 对照本地 PDF 的实际字体和字形，网页的 Latin 字形、字宽以及数学字体 MATH 表与 Typst 0.15.1 资产一致。
+- Chromium 实测 Regular、Bold、Italic、BoldItalic、中文宋体、中文黑体、楷体及普通/粗体公式，均命中站点自带字体；MathML 显式继承字重，避免浏览器默认重置为 normal。
+- 全部本地文章在 1280px 和 390px 宽度下返回 200，无页面级横向溢出。超宽公式保留独立横向滚动。
+- 新增中文字符的子集生成验证通过，可变字重范围保留；本地模板和文章内容未修改。
+- 尚未逐一测试 Firefox、Safari 及不同系统的抗锯齿效果；HTML 与 PDF 不保证逐像素一致。
+
+## 初始版本验证记录
 
 - Typst 0.15.1 直接编译示例 HTML 与 PDF 成功，公式使用内置 `nabla`，`definition` 来自你的模板。
 - `pnpm dev` 成功启动，首页文章列表和文章页均返回 HTTP 200。

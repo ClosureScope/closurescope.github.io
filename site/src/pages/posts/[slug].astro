@@ -7,6 +7,8 @@ export function getStaticPaths() {
 const { post } = Astro.props;
 ---
 <Layout title={post.title}>
+  <link slot="head" rel="preload" href="/fonts/LibertinusSerif-Regular.woff2" as="font" type="font/woff2" crossorigin />
+  {post.body.includes('<math') && <link slot="head" rel="preload" href="/fonts/NewCMMath-Book.woff2" as="font" type="font/woff2" crossorigin />}
   <Fragment slot="head" set:html={post.styles} />
   <article>
     <header class="article-header">

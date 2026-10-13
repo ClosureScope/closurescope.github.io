@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync, unlinkSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync, unlinkSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { categories } from './categories.mjs';
@@ -56,6 +56,16 @@ export function buildPosts() {
     return { slug, title, date, category, body, styles };
   });
   posts.sort((a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug));
+  const fontPython = join(root, '.tools', 'fonttools', 'bin', 'python');
+  try {
+    const result = execFileSync(process.env.FONTTOOLS_PYTHON || (existsSync(fontPython) ? fontPython : 'python3'),
+      [join(root, 'scripts', 'build-fonts.py')], {
+        cwd: root, input: JSON.stringify(posts), encoding: 'utf8', maxBuffer: 8 * 1024 * 1024,
+      });
+    process.stdout.write(result);
+  } catch (error) {
+    throw new Error(`网页字体生成失败。请按 README 安装 scripts/font-requirements.txt 中的依赖。\n${error.stderr || error.message}`);
+  }
   // Publish the manifest atomically only after every article succeeds.
   const manifest = join(output, 'posts.json');
   const json = JSON.stringify(posts, null, 2) + '\n';
