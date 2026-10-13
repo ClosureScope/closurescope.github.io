@@ -1,6 +1,7 @@
 node_modules/
 .tools/
 .generated/
+__pycache__/
 site/public/fonts/subsets/
 site/.astro/
 site/dist/

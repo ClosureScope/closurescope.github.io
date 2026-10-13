@@ -3,12 +3,20 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.17.1",
-  "engines": { "node": ">=22.12.0" },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "cd site && astro dev --host 127.0.0.1",
     "build": "cd site && astro build",
     "preview": "cd site && astro preview --host 127.0.0.1",
-    "build:posts": "node scripts/build-posts.mjs"
+    "build:posts": "node scripts/build-posts.mjs",
+    "test:math": "node --test tests/math-spacing.test.mjs"
   },
-  "dependencies": { "astro": "7.3.4" }
+  "dependencies": {
+    "astro": "7.3.4"
+  },
+  "devDependencies": {
+    "playwright-core": "1.58.2"
+  }
 }

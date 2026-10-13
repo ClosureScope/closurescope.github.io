@@ -155,6 +155,24 @@ Git 已初始化到 `main`；是否已连接远程仓库和发布，请以 `git 
 
 ## 字体对齐验证
 
+### MathML 括号间距修复
+
+Chromium 会用可伸缩括号的最大变体宽度作为小括号的占位宽度，造成 `f(x)`、`V(s)` 等表达式的异常空白，见 [MathML 实现说明](https://mathml.igalia.com/project/#width-of-stretchy-operators-blocked-on-chromiums-refactoring)。构建时 `scripts/math_font_metrics.py` 从实际使用的 Book/Bold 字体提取各尺寸括号的宽度和高度；文章页在字体加载后按实际绘制高度修正过宽的占位。保留原生 MathML、伸缩行为和语义，不统一压缩字距。
+
+只处理明确匹配到字体变体且占位过宽的竖向括号；显式宽度、`stretchy="false"`、超大拼接括号和未匹配的浏览器度量保持原状。字号或窗口变化时重新测量。
+
+浏览器回归测试包含相邻字母、运算符、普通/粗体公式、分式、矩阵、超高括号、字号变化及所有文章的桌面/手机布局：
+
+```bash
+pnpm exec playwright-core install chromium
+pnpm build
+pnpm test:math
+```
+
+已有 Chromium 时可设置 `CHROMIUM_PATH=/path/to/chromium pnpm test:math`。Playwright Core 仅作为开发测试依赖，不进入网站运行时。
+
+### 验证记录
+
 - 对照本地 PDF 的实际字体和字形，网页的 Latin 字形、字宽以及数学字体 MATH 表与 Typst 0.15.1 资产一致。
 - Chromium 实测 Regular、Bold、Italic、BoldItalic、中文宋体、中文黑体、楷体及普通/粗体公式，均命中站点自带字体；MathML 显式继承字重，避免浏览器默认重置为 normal。
 - 全部本地文章在 1280px 和 390px 宽度下返回 200，无页面级横向溢出。超宽公式保留独立横向滚动。
