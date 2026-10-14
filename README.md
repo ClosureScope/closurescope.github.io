@@ -191,3 +191,7 @@ pnpm test:math
 浏览器验证工具临时安装在 `/tmp/blog-browser-check/`，未加入项目依赖。VS Code/Tinymist 可能在 `posts/` 生成 PDF，已忽略这类产物。
 
 通常 `pnpm dev` 在前台运行，Ctrl+C 停止。Astro 7 在检测到编程代理环境时会自动转为后台；此时可以用 `pnpm dev stop`、`pnpm dev status` 管理。需要前台运行时用 `pnpm dev --ignore-lock`。
+
+### 数学结构排版排查
+
+根号、上下标、重音与嵌套矩阵的原因、修复方式、测试和已知边界见 [数学排版排查](docs/math-layout.md)。新增回归样例从真实 Typst 源文件生成，避免只测试手写 MathML 而漏掉导出样式问题。

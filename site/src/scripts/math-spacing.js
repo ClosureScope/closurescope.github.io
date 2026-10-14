@@ -1,3 +1,4 @@
+import { prepareMathLayout, resetMathLayout, repairMathLayout } from './math-layout.js';
 import metrics from '../../../.generated/math-delimiter-metrics.json';
 
 // Chromium reserves the widest variant's advance for every stretchy fence,
@@ -5,6 +6,7 @@ import metrics from '../../../.generated/math-delimiter-metrics.json';
 // box from the variant it actually painted. See mathml.igalia.com/project/.
 export function repairMathSpacing(root) {
   if (!root) return;
+  prepareMathLayout(root);
   const repaired = new Set();
   let scheduled = false;
 
@@ -14,6 +16,8 @@ export function repairMathSpacing(root) {
     // widths set here; authored MathML widths and stretchy=false stay intact.
     for (const operator of repaired) operator.style.removeProperty('width');
     repaired.clear();
+    resetMathLayout(root);
+    repairMathLayout(root);
     const updates = [];
     for (const operator of root.querySelectorAll('math mo')) {
       if (operator.getAttribute('stretchy')?.toLowerCase() === 'false'

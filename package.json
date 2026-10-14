@@ -11,7 +11,7 @@
     "build": "cd site && astro build",
     "preview": "cd site && astro preview --host 127.0.0.1",
     "build:posts": "node scripts/build-posts.mjs",
-    "test:math": "node --test tests/math-spacing.test.mjs"
+    "test:math": "node --test tests/math-*.test.mjs"
   },
   "dependencies": {
     "astro": "7.3.4"

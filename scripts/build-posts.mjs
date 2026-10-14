@@ -1,19 +1,25 @@
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync, unlinkSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { categories } from './categories.mjs';
+import { scopeMathTableStyles } from './math-styles.mjs';
 
 export const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const output = join(root, '.generated');
 const compiler = process.env.TYPST_BIN || 'typst';
 
-function typst(args) {
-  try {
-    return execFileSync(compiler, args, { cwd: root, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });
-  } catch (error) {
-    throw new Error(`Typst 编译失败：${error.stderr || error.message}`);
+export function typst(args) {
+  const result = spawnSync(compiler, args, { cwd: root, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });
+  if (result.error || result.status !== 0) {
+    throw new Error(`Typst 编译失败：${result.stderr || result.error?.message}`);
   }
+  // 0.15.1 silently drops some mathematical constructs despite exit status 0.
+  // Never publish an equation with missing mathematical meaning.
+  if (/was ignored during MathML export/.test(result.stderr)) {
+    throw new Error(`Typst HTML 导出丢失了数学内容，已停止构建：\n${result.stderr}`);
+  }
+  return result.stdout;
 }
 
 export function buildPosts() {
@@ -52,7 +58,7 @@ export function buildPosts() {
     const body = html.match(/<body\b[^>]*>([\s\S]*)<\/body>\s*<\/html>\s*$/i)?.[1];
     const head = html.match(/<head\b[^>]*>([\s\S]*?)<\/head>/i)?.[1];
     if (body === undefined || head === undefined) throw new Error(`${name} 的 HTML 结构与预期不符。`);
-    const styles = [...head.matchAll(/<style\b[^>]*>[\s\S]*?<\/style>/gi)].map(match => match[0]).join('\n');
+    const styles = scopeMathTableStyles([...head.matchAll(/<style\b[^>]*>[\s\S]*?<\/style>/gi)].map(match => match[0]).join('\n'));
     return { slug, title, date, category, body, styles };
   });
   posts.sort((a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug));
