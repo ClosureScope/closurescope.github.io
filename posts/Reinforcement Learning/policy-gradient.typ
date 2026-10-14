@@ -1,8 +1,6 @@
-#import "../typst/template.typ": *
+#import "../../typst/template.typ": *
 #show: article.with(
   title: "Policy Gradient",
-  date: "2026-09-28",
-  category: "Reinforcement Learning",
 )
 
 = Policy Gradient Theorem

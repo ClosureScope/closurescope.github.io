@@ -37,11 +37,10 @@ parser = VisibleText()
 for post in posts:
     parser.feed(post["body"])
     parser.parts.extend([post["title"], post["category"]])
-# Include navigation, index headings, and dates as well as article text.
+# Include navigation, index headings as well as article text.
 for file in sorted(file for file in (ROOT / "site/src").rglob("*")
                    if file.suffix in (".astro", ".js")):
     parser.parts.append(file.read_text())
-parser.parts.append((ROOT / "scripts/categories.mjs").read_text())
 codepoints = sorted(set(map(ord, "".join(parser.parts))) | set(range(32, 127)))
 OUTPUT.mkdir(parents=True, exist_ok=True)
 faces = []

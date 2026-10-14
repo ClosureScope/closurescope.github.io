@@ -13,7 +13,7 @@ const { post } = Astro.props;
     <header class="article-header">
       <div class="article-meta">
         <a class="back-link" href="/">← 返回首页</a>
-        <span><time datetime={post.date}>{post.date.replaceAll('-', '.')}</time> · {post.category}</span>
+        <span>{post.category}</span>
       </div>
       <h1>{post.title}</h1>
     </header>

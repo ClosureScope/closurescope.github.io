@@ -1,8 +1,6 @@
-#import "../typst/template.typ": *
+#import "../../typst/template.typ": *
 #show: article.with(
   title: "Efficient LLMs: Normalization",
-  date: "2026-10-10",
-  category: "LLM",
 )
 
 

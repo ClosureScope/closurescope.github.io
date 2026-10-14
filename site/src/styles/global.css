@@ -18,8 +18,7 @@ main { min-height: 65vh; padding-bottom: 88px; }
 h1, h2, h3 { line-height: 1.4; overflow-wrap: anywhere; }
 h1 { font-size: clamp(30px, 5vw, 46px); letter-spacing: -.045em; margin: 16px 0 22px; }
 .post-list { list-style: none; padding: 0; margin: 0; }
-.post-list li { display: grid; grid-template-columns: 105px 1fr; gap: 24px; padding: 30px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
-.post-list time { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.post-list li { padding: 30px 0; border-bottom: 1px solid var(--line); }
 .post-list h3 { font-size: 19px; margin: 0; }
 .post-list h3 a { text-decoration: none; }
 .page-intro { padding: 28px 0 20px; }
@@ -63,7 +62,6 @@ article { font-size: 17px; max-width: 41.23em; margin-inline: auto; }
 .skip:focus { top: 0; }
 @media (max-width: 600px) {
   .site-header, main { width: calc(100% - 36px); }
-  .post-list li { grid-template-columns: 1fr; gap: 8px; }
   .post-list h3 { font-size: 18px; }
   article { font-size: 16px; }
 }

@@ -3,7 +3,7 @@
 文章全部写在 `.typ` 中，使用 Typst 原生数学语法、标题、代码块和图片。文章统一引用你提供的 `typst/template.typ`，保留 `frame-it`、`tablem`、`definition` 等命令。Astro 只负责网站外壳；不使用 Markdown/MDX、LaTeX、KaTeX 或 MathJax。
 
 ```text
-posts/*.typ + typst/template.typ（原有笔记模板）+ assets/*
+posts/<分类>/*.typ + typst/template.typ（原有笔记模板）+ assets/*
     ↓ Typst 0.15.1（实验性 HTML 导出）
 .generated/*.html + posts.json
     ↓ Astro（首页文章列表、文章页、样式）
@@ -28,17 +28,16 @@ pnpm dev
 复制示例，文件名用小写英文、数字和连字符，文件名就是 URL：
 
 ```bash
-cp posts/hello-world.typ posts/least-squares.typ
+mkdir -p posts/Optimization
+cp posts/"Reinforcement Learning"/value-iteration.typ posts/Optimization/least-squares.typ
 ```
 
-然后在这个 `.typ` 中修改 `title`、`date`（`YYYY-MM-DD`）、`category` 和正文。不需要另写 frontmatter、JSON 或注册路由。每篇文章选一个主分类：`RL`、`Optimization`、`Machine Learning`、`Mathematics` 或 `Systems`。分类名单统一写在 `scripts/categories.mjs`。
+然后在这个 `.typ` 中修改 `title` 和正文。分类直接使用 `posts/` 下的文件夹名，不需要在文章中填写，也不需要维护分类名单。文件名必须在所有分类中唯一，以保持文章 URL 稳定。
 
 ````typst
-#import "../typst/template.typ": *
+#import "../../typst/template.typ": *
 #show: article.with(
   title: "最小二乘",
-  date: "2026-09-23",
-  category: "Optimization",
 )
 
 = 问题
@@ -54,12 +53,12 @@ def gradient(A, x, b):
     return A.T @ (A @ x - b)
 ```
 
-#image("../assets/gradient.svg", alt: "梯度下降示意图")
+#image("../../assets/gradient.svg", alt: "梯度下降示意图")
 
 #definition[梯度][梯度指出函数增长最快的方向。]
 ````
 
-新文章会出现在 `/posts/least-squares/`，首页按分类分组，只显示有文章的分类；分类内按日期倒序排列。旧的 `/posts/` 列表地址会跳转到首页。Typst 默认不为标题编号；模板已设置自动编号，`= ...` 显示为 `1. ...`，`== ...` 显示为 `1.1. ...`。网页中它们分别是 `h2`、`h3`，文章标题由 Astro 输出为 `h1`。Typst 独立导出的 HTML 和 PDF 会在正文开头显示 `article` 的标题；网站构建时传入 `site=true`，避免标题重复。`article` 是在原模板末尾加的博客入口，复用原模板的定义框等命令；正文可以直接用 `definition`、`theorem` 等原有命令。迁移旧笔记时，把原来的整篇文档 `#show` 改为 `#show: article.with(...)`，并补上日期、分类。
+新文章会出现在 `/posts/least-squares/`，首页按分类分组，只显示有文章的分类；分类和分类内的文章按文件夹名、文件名排序；不显示日期。旧的 `/posts/` 列表地址会跳转到首页。Typst 默认不为标题编号；模板已设置自动编号，`= ...` 显示为 `1. ...`，`== ...` 显示为 `1.1. ...`。网页中它们分别是 `h2`、`h3`，文章标题由 Astro 输出为 `h1`。Typst 独立导出的 HTML 和 PDF 会在正文开头显示 `article` 的标题；网站构建时传入 `site=true`，避免标题重复。`article` 是在原模板末尾加的博客入口，复用原模板的定义框等命令；正文可以直接用 `definition`、`theorem` 等原有命令。迁移旧笔记时，把原来的整篇文档 `#show` 改为 `#show: article.with(...)`，只填写标题，并放入对应分类文件夹。
 
 图片放在 `assets/`，从文章使用相对路径引用。当前 Typst 会把图片内嵌进 HTML，不需要另外复制到网站 public 目录。
 
@@ -75,8 +74,8 @@ pnpm preview      # 预览 site/dist 中的生产构建
 
 ```bash
 mkdir -p .generated
-typst compile --root . --features html posts/hello-world.typ .generated/hello-world.html
-typst compile --root . posts/hello-world.typ /tmp/hello-world.pdf # 可选：直接导出带标题的 PDF
+typst compile --root . --features html posts/Optimization/least-squares.typ .generated/hello-world.html
+typst compile --root . posts/Optimization/least-squares.typ /tmp/hello-world.pdf # 可选：直接导出带标题的 PDF
 ```
 
 部署时上传 `site/dist/` 即可，服务器不需要 Node 或 Typst。当前 URL 按域名根路径设计；若以后部署到 `/blog/` 等子路径，需要同时调整 Astro `base` 和导航 URL。
@@ -89,12 +88,11 @@ typst compile --root . posts/hello-world.typ /tmp/hello-world.pdf # 可选：直
 
 | 路径 | 用途 |
 | --- | --- |
-| `posts/*.typ` | 文章正文与元信息，唯一写作来源 |
+| `posts/<分类>/*.typ` | 文章正文与元信息，唯一写作来源 |
 | `typst/template.typ` | 你提供的笔记模板，附加 `article` 博客入口与元信息 |
 | `assets/` | 文章图片 |
 | `scripts/build-posts.mjs` | 调用 Typst，读取元信息，提取 HTML 正文和公式样式 |
 | `scripts/build-fonts.py` | 从编译后的 HTML 自动生成中文字体子集，保留可变字重 |
-| `scripts/categories.mjs` | 可用的文章分类及其显示顺序 |
 | `scripts/typst-plugin.mjs` | 复用 Vite 文件监听与刷新机制 |
 | `site/src/pages/` | 首页与文章路由 |
 | `site/src/styles/global.css` | 网站排版和代码样式 |
@@ -149,7 +147,7 @@ pnpm dev
 - 旧模板使用的 `Libertinus Serif`、`Noto Serif SC`、`Noto Sans SC`、`FandolKai` 已通过网页 CSS 映射到随站点分发的字体。网页正文与 PDF 的行距、换行和分页仍可能不同；公式内部布局使用同一个 Typst 引擎。
 - 文章采用黑字白底，正文 17px（手机 16px），行宽约 41.23em，对应默认 A4、25mm 页边距和 11pt 正文的比例；标题比例、段间距和公式留白向本地模板靠拢。网页保留响应式布局，不强制复制 PDF 分页；比较时应对齐显示字号，而不是仅比较两个查看器的缩放百分比。
 - 开发时任一源文件变化会重编译全部文章，适合初期的小博客；数量明显增加后再做增量构建。
-- 当前只发布 `posts/` 直属 `.typ`，没有草稿开关；辅助 Typst 文件放到 `typst/`。文章内容视为本人可信内容。
+- 当前只发布 `posts/<分类>/` 直属 `.typ`，没有草稿开关；辅助 Typst 文件放到 `typst/`。文章内容视为本人可信内容。
 
 Git 已初始化到 `main`；是否已连接远程仓库和发布，请以 `git remote -v` 与 GitHub Actions 的运行结果为准。
 

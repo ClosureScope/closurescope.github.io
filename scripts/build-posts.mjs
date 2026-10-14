@@ -2,7 +2,6 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync, unlinkSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { categories } from './categories.mjs';
 import { namespaceSvgIds } from './svg-math.mjs';
 
 export const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -32,11 +31,27 @@ export function buildPosts() {
   mkdirSync(output, { recursive: true });
   process.stdout.write(execFileSync(python, [join(root, 'scripts/prepare-typst-fonts.py')], { cwd: root, encoding: 'utf8' }));
   const fontArgs = ['--ignore-system-fonts', '--font-path', join(output, 'typst-fonts')];
-  const posts = readdirSync(join(root, 'posts')).filter(name => name.endsWith('.typ')).sort().map(name => {
-    const slug = name.slice(0, -4);
-    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
-      throw new Error(`文章文件名请使用小写英文、数字和连字符：${name}`);
+  const sources = [];
+  const slugs = new Set();
+  for (const entry of readdirSync(join(root, 'posts'), { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+    if (entry.isFile() && entry.name.endsWith('.typ')) {
+      throw new Error(`请将 posts/${entry.name} 放入分类文件夹 posts/<分类>/。`);
     }
+    if (!entry.isDirectory()) continue;
+    const category = entry.name;
+    for (const file of readdirSync(join(root, 'posts', category), { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      if (!file.isFile() || !file.name.endsWith('.typ')) continue;
+      const name = join(category, file.name);
+      const slug = file.name.slice(0, -4);
+      if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+        throw new Error(`文章文件名请使用小写英文、数字和连字符：${name}`);
+      }
+      if (slugs.has(slug)) throw new Error(`文章文件名重复：${name}。不同分类中的文件名也必须唯一。`);
+      slugs.add(slug);
+      sources.push({ name, slug, category });
+    }
+  }
+  const posts = sources.map(({ name, slug, category }) => {
     const input = join(root, 'posts', name);
     const destination = join(output, `${slug}.html`);
     typst(['compile', ...fontArgs, '--root', root, '--features', 'html', '--input', 'site=true', input, destination]);
@@ -45,16 +60,9 @@ export function buildPosts() {
       'query(<blog-meta>).map(it => it.value)',
     ]));
     if (metadata.length !== 1) throw new Error(`${name} 必须使用一次 article 模板。`);
-    const { title, date, category } = metadata[0];
-    if (![title, date, category].every(value => typeof value === 'string' && value.trim())) {
-      throw new Error(`${name} 的 title、date、category 必须是非空字符串。`);
-    }
-    if (!categories.includes(category)) {
-      throw new Error(`${name} 的 category 必须是以下之一：${categories.join('、')}。`);
-    }
-    const parsedDate = new Date(`${date}T00:00:00Z`);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(+parsedDate) || parsedDate.toISOString().slice(0, 10) !== date) {
-      throw new Error(`${name} 的 date 必须是有效的 YYYY-MM-DD 日期。`);
+    const { title } = metadata[0];
+    if (typeof title !== 'string' || !title.trim()) {
+      throw new Error(`${name} 的 title 必须是非空字符串。`);
     }
     // Extract only the compiler's known standalone envelope, never parse Typst source.
     // Keep its MathML support CSS from <head>; dropping it breaks advanced equations.
@@ -63,9 +71,8 @@ export function buildPosts() {
     const head = html.match(/<head\b[^>]*>([\s\S]*?)<\/head>/i)?.[1];
     if (body === undefined || head === undefined) throw new Error(`${name} 的 HTML 结构与预期不符。`);
     const styles = [...head.matchAll(/<style\b[^>]*>[\s\S]*?<\/style>/gi)].map(match => match[0]).join('\n');
-    return { slug, title, date, category, body: namespaceSvgIds(body), styles };
+    return { slug, title, category, body: namespaceSvgIds(body), styles };
   });
-  posts.sort((a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug));
   try {
     const result = execFileSync(python,
       [join(root, 'scripts', 'build-fonts.py')], {

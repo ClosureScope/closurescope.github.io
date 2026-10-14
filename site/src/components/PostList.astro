@@ -4,7 +4,6 @@ const { posts } = Astro.props;
 <ol class="post-list">
   {posts.map(post => (
     <li>
-      <time datetime={post.date}>{post.date.replaceAll('-', '.')}</time>
       <h3><a href={`/posts/${post.slug}/`}>{post.title}</a></h3>
     </li>
   ))}

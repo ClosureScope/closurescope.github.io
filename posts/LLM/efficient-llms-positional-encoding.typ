@@ -1,8 +1,6 @@
-#import "../typst/template.typ": *
+#import "../../typst/template.typ": *
 #show: article.with(
   title: "Efficient LLMs: Positional Encoding",
-  date: "2026-10-11",
-  category: "LLM",
 )
 
 = Sinusoidal Absolute Position Embedding

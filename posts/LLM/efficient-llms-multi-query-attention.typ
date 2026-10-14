@@ -1,8 +1,6 @@
-#import "../typst/template.typ": *
+#import "../../typst/template.typ": *
 #show: article.with(
   title: "Efficient LLMs: Multi-Query Attention",
-  date: "2026-10-12",
-  category: "LLM",
 )
 
 

@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import PostList from '../components/PostList.astro';
 import posts from '../../../.generated/posts.json';
-import { categories } from '../../../scripts/categories.mjs';
+const categories = [...new Set(posts.map(post => post.category))];
 const groups = categories.map(category => ({
   category,
   posts: posts.filter(post => post.category === category),

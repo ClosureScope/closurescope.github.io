@@ -1,8 +1,6 @@
-#import "../typst/template.typ": *
+#import "../../typst/template.typ": *
 #show: article.with(
   title: "Efficient LLMs: Kernel-Based Attention",
-  date: "2026-10-13",
-  category: "LLM",
 )
 
 Standard transformer attention is defined as
