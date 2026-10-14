@@ -116,7 +116,7 @@ typst compile --root . posts/hello-world.typ /tmp/hello-world.pdf # 可选：直
 
 旧笔记中的 [Noto Sans SC](https://github.com/google/fonts/tree/main/ofl/notosanssc) 和 [Noto Serif SC](https://github.com/google/fonts/tree/main/ofl/notoserifsc) 现已从 Google Fonts 官方文件安装到本机 `~/.local/share/fonts/`，均使用 SIL OFL 1.1 授权。正文中文使用 Noto Serif SC，强调和代码中的中文使用 Noto Sans SC。构建时从渲染后的文章、标题和导航提取字符，生成共享的 WOFF2 子集；新增字符会自动加入，可变字重保留。完整字体仍作为构建输入保存在 `site/public/fonts/`，网页只引用生成的子集，不下载完整中文字体。生成文件位于被忽略的 `site/public/fonts/subsets/`，文件名带内容哈希供浏览器缓存。
 
-英文使用 Typst 0.15.1 资产包中的 Libertinus Serif Regular/Bold/Italic/BoldItalic；数学使用同包的 New Computer Modern Math Book/Bold。来源、转换方法和授权见 `site/public/fonts/README.md`。普通数学的 CSS 400 对应 Book 字形，不是改用较细的 Regular。`strong` 映射为 700：Typst 的默认 strong 会在 regular 基础上增加 300。`em` 的英文使用真斜体，中文使用直立楷体。
+英文使用 Typst 0.15.1 资产包中的 Libertinus Serif Regular/Bold/Italic/BoldItalic；数学使用同包的 New Computer Modern Math Book/Bold。来源、转换方法和授权见 `site/public/fonts/README.md`。公式由 Typst 直接生成 SVG 字形，网页不再加载数学字体来重新排版。`strong` 映射为 700：Typst 的默认 strong 会在 regular 基础上增加 300。`em` 的英文使用真斜体，中文使用直立楷体。
 
 楷体使用 CTAN 的 [FandolKai](https://ctan.org/pkg/fandol)，官方 README 标为 GPL 加字体例外。`FandolKai-Regular.otf` 已安装在本机 `~/.local/share/fonts/`，网站也分发其 WOFF2 版本，供强调文字使用。新 WSL 环境需要重新安装上述四款本地字体，运行 `fc-cache -f ~/.local/share/fonts`；可用 `fc-match 'JetBrains Mono'`、`fc-match 'Noto Sans SC'`、`fc-match 'Noto Serif SC'` 和 `fc-match FandolKai` 检查。
 
@@ -135,18 +135,18 @@ pnpm dev
 
 ## HTML 实测与限制
 
-采用直接 HTML 的原因：这个最小示例实测能输出可选择的正文、语义化标题、带高亮的 Python `pre/code`、内嵌图片和原生 MathML。无需整篇变成图片，也无需转写公式语法。构建脚本还保留 Typst 在 HTML head 中输出的 MathML 辅助 CSS。
+采用直接 HTML 的原因：这个最小示例实测能输出可选择的正文、语义化标题、带高亮的 Python `pre/code`、内嵌图片。公式使用 Typst 生成的内联 SVG，并保留隐藏 MathML 或作者描述供辅助技术读取。无需整篇变成图片，也无需转写公式语法。构建脚本还保留 Typst 在 HTML head 中输出的 MathML 辅助 CSS。
 
 **Typst HTML 导出仍是实验功能。** [官方文档](https://typst.app/docs/reference/html/) 明确表示它仍不完整，不建议用于生产用例。这是一个固定版本、已验证当前示例的最小博客原型，不代表任意 Typst 文档或宏包均可稳定导出。`pnpm build` 成功只表示静态站点构建成功，不意味着 Typst 的 HTML 功能已稳定。
 
 当前边界：
 
 - HTML 不等同于 PDF 页面排版；分页、精确位置、复杂绘图或某些第三方包可能不支持，需要逐项验证。没有尝试把 PDF 模板强行搬进网页。
-- 数学由浏览器原生 MathML 渲染；应使用现代 Chrome/Edge、Firefox 或 Safari。数学字体已随站点提供，但浏览器与 Typst 的公式布局算法仍可能有细节差异。
+- 数学由 Typst 的 `html.frame` 排版成 SVG；尺寸随正文字号缩放，长公式可横向滚动。复制功能提供 MathML 或作者描述，不提供原始 Typst/LaTeX 源码。详见 [SVG 数学公式](docs/svg-math.md)。
 - 图片内嵌会增大 HTML；少量技术插图足够，未来图片较多时再考虑独立资源输出。
 - Typst 尚不直接输出 HTML 片段。本项目针对固定版本的完整 HTML 提取 body 与 style，不解释 `.typ` 源码；升级编译器后需要重新验证输出结构。
 - 网站标题与导航由 Astro 显示；独立导出的 Typst HTML 和 PDF 在正文开头显示文章标题，没有扉页或自动目录。Typst 的字体设置不会自动变成网页 CSS，网页正文使用 `site/src/styles/global.css` 中的字体。`frame-it` 的 `definition` 已实际验证可导出 HTML；其他宏包功能需按需逐一验证。
-- 旧模板使用的 `Libertinus Serif`、`Noto Serif SC`、`Noto Sans SC`、`FandolKai` 已通过网页 CSS 映射到随站点分发的字体。网页与 PDF 的行距、字距、分页和数学排版仍可能不同。
+- 旧模板使用的 `Libertinus Serif`、`Noto Serif SC`、`Noto Sans SC`、`FandolKai` 已通过网页 CSS 映射到随站点分发的字体。网页正文与 PDF 的行距、换行和分页仍可能不同；公式内部布局使用同一个 Typst 引擎。
 - 文章采用黑字白底，正文 17px（手机 16px），行宽约 41.23em，对应默认 A4、25mm 页边距和 11pt 正文的比例；标题比例、段间距和公式留白向本地模板靠拢。网页保留响应式布局，不强制复制 PDF 分页；比较时应对齐显示字号，而不是仅比较两个查看器的缩放百分比。
 - 开发时任一源文件变化会重编译全部文章，适合初期的小博客；数量明显增加后再做增量构建。
 - 当前只发布 `posts/` 直属 `.typ`，没有草稿开关；辅助 Typst 文件放到 `typst/`。文章内容视为本人可信内容。
@@ -155,23 +155,20 @@ Git 已初始化到 `main`；是否已连接远程仓库和发布，请以 `git 
 
 ## 字体对齐验证
 
-### MathML 括号间距修复
+### SVG 数学公式
 
-Chromium 会用可伸缩括号的最大变体宽度作为小括号的占位宽度，造成 `f(x)`、`V(s)` 等表达式的异常空白，见 [MathML 实现说明](https://mathml.igalia.com/project/#width-of-stretchy-operators-blocked-on-chromiums-refactoring)。构建时 `scripts/math_font_metrics.py` 从实际使用的 Book/Bold 字体提取各尺寸括号的宽度和高度；文章页在字体加载后按实际绘制高度修正过宽的占位。保留原生 MathML、伸缩行为和语义，不统一压缩字距。
-
-只处理明确匹配到字体变体且占位过宽的竖向括号；显式宽度、`stretchy="false"`、超大拼接括号和未匹配的浏览器度量保持原状。字号或窗口变化时重新测量。
-
-浏览器回归测试包含相邻字母、运算符、普通/粗体公式、分式、矩阵、超高括号、字号变化及所有文章的桌面/手机布局：
+当前分支已用 Typst 原生 SVG 替换浏览器 MathML 视觉排版和对应补偿脚本。架构、复制能力、无障碍边界、测试方法见 [SVG 数学公式](docs/svg-math.md)。之前的 MathML 排查保留为历史记录。
 
 ```bash
-pnpm exec playwright-core install chromium
+pnpm exec playwright-core install chromium firefox
 pnpm build
 pnpm test:math
+MATH_BROWSER=firefox node --test tests/math-svg.test.mjs
 ```
 
 已有 Chromium 时可设置 `CHROMIUM_PATH=/path/to/chromium pnpm test:math`。Playwright Core 仅作为开发测试依赖，不进入网站运行时。
 
-### 验证记录
+### 之前的字体对齐验证记录
 
 - 对照本地 PDF 的实际字体和字形，网页的 Latin 字形、字宽以及数学字体 MATH 表与 Typst 0.15.1 资产一致。
 - Chromium 实测 Regular、Bold、Italic、BoldItalic、中文宋体、中文黑体、楷体及普通/粗体公式，均命中站点自带字体；MathML 显式继承字重，避免浏览器默认重置为 normal。
@@ -194,4 +191,4 @@ pnpm test:math
 
 ### 数学结构排版排查
 
-根号、上下标、重音与嵌套矩阵的原因、修复方式、测试和已知边界见 [数学排版排查](docs/math-layout.md)。新增回归样例从真实 Typst 源文件生成，避免只测试手写 MathML 而漏掉导出样式问题。
+之前 MathML 方案中根号、上下标、重音与嵌套矩阵的问题见 [数学排版排查](docs/math-layout.md)。新增回归样例从真实 Typst 源文件生成，避免只测试手写 MathML 而漏掉导出样式问题。

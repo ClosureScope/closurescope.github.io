@@ -3,11 +3,13 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFile
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { categories } from './categories.mjs';
-import { scopeMathTableStyles } from './math-styles.mjs';
+import { namespaceSvgIds } from './svg-math.mjs';
 
 export const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const output = join(root, '.generated');
 const compiler = process.env.TYPST_BIN || 'typst';
+const fontPython = join(root, '.tools', 'fonttools', 'bin', 'python');
+const python = process.env.FONTTOOLS_PYTHON || (existsSync(fontPython) ? fontPython : 'python3');
 
 export function typst(args) {
   const result = spawnSync(compiler, args, { cwd: root, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 });
@@ -17,7 +19,7 @@ export function typst(args) {
   // 0.15.1 silently drops some mathematical constructs despite exit status 0.
   // Never publish an equation with missing mathematical meaning.
   if (/was ignored during MathML export/.test(result.stderr)) {
-    throw new Error(`Typst HTML 导出丢失了数学内容，已停止构建：\n${result.stderr}`);
+    throw new Error(`Typst HTML 导出丢失了数学内容，已停止构建。请为该公式设置 math.equation(alt: ...) 提供完整描述：\n${result.stderr}`);
   }
   return result.stdout;
 }
@@ -28,6 +30,8 @@ export function buildPosts() {
     throw new Error(`本项目验证并固定使用 Typst 0.15.1；当前为 ${version}。请安装匹配版本。`);
   }
   mkdirSync(output, { recursive: true });
+  process.stdout.write(execFileSync(python, [join(root, 'scripts/prepare-typst-fonts.py')], { cwd: root, encoding: 'utf8' }));
+  const fontArgs = ['--ignore-system-fonts', '--font-path', join(output, 'typst-fonts')];
   const posts = readdirSync(join(root, 'posts')).filter(name => name.endsWith('.typ')).sort().map(name => {
     const slug = name.slice(0, -4);
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
@@ -35,9 +39,9 @@ export function buildPosts() {
     }
     const input = join(root, 'posts', name);
     const destination = join(output, `${slug}.html`);
-    typst(['compile', '--root', root, '--features', 'html', '--input', 'site=true', input, destination]);
+    typst(['compile', ...fontArgs, '--root', root, '--features', 'html', '--input', 'site=true', input, destination]);
     const metadata = JSON.parse(typst([
-      'eval', '--root', root, '--features', 'html', '--target', 'html', '--in', input,
+      'eval', ...fontArgs, '--root', root, '--features', 'html', '--target', 'html', '--in', input,
       'query(<blog-meta>).map(it => it.value)',
     ]));
     if (metadata.length !== 1) throw new Error(`${name} 必须使用一次 article 模板。`);
@@ -58,13 +62,12 @@ export function buildPosts() {
     const body = html.match(/<body\b[^>]*>([\s\S]*)<\/body>\s*<\/html>\s*$/i)?.[1];
     const head = html.match(/<head\b[^>]*>([\s\S]*?)<\/head>/i)?.[1];
     if (body === undefined || head === undefined) throw new Error(`${name} 的 HTML 结构与预期不符。`);
-    const styles = scopeMathTableStyles([...head.matchAll(/<style\b[^>]*>[\s\S]*?<\/style>/gi)].map(match => match[0]).join('\n'));
-    return { slug, title, date, category, body, styles };
+    const styles = [...head.matchAll(/<style\b[^>]*>[\s\S]*?<\/style>/gi)].map(match => match[0]).join('\n');
+    return { slug, title, date, category, body: namespaceSvgIds(body), styles };
   });
   posts.sort((a, b) => b.date.localeCompare(a.date) || a.slug.localeCompare(b.slug));
-  const fontPython = join(root, '.tools', 'fonttools', 'bin', 'python');
   try {
-    const result = execFileSync(process.env.FONTTOOLS_PYTHON || (existsSync(fontPython) ? fontPython : 'python3'),
+    const result = execFileSync(python,
       [join(root, 'scripts', 'build-fonts.py')], {
         cwd: root, input: JSON.stringify(posts), encoding: 'utf8', maxBuffer: 8 * 1024 * 1024,
       });

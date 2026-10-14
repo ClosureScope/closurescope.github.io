@@ -1,3 +1,4 @@
+#import "web-math.typ": web-equation
 // Shared Typst article template. The existing note macros remain available below.
 #import "@preview/frame-it:2.0.0": frame-style, frames, styles
 #import "@preview/tablem:0.3.0": tablem, three-line-table
@@ -88,6 +89,7 @@
   show emph: text.with(font: (font-en, font-kai), style: "normal")
   show raw: set text(font: (font-code, font-hei))
   show: frame-style(styles.hint)
+  show math.equation: web-equation
   set heading(numbering: "1.1.")
   [#metadata((title: title, date: date, category: category)) <blog-meta>]
   // Astro renders the website title; standalone HTML and PDF need their own.

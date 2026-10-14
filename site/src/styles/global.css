@@ -4,9 +4,6 @@
 @font-face { font-family: "Libertinus Serif"; src: url("/fonts/LibertinusSerif-Bold.woff2") format("woff2"); font-style: normal; font-weight: 700; font-display: swap; }
 @font-face { font-family: "Libertinus Serif"; src: url("/fonts/LibertinusSerif-Italic.woff2") format("woff2"); font-style: italic; font-weight: 400; font-display: swap; }
 @font-face { font-family: "Libertinus Serif"; src: url("/fonts/LibertinusSerif-BoldItalic.woff2") format("woff2"); font-style: italic; font-weight: 700; font-display: swap; }
-/* Typst uses the Book face (intrinsic weight 450) for normal math. */
-@font-face { font-family: "New Computer Modern Math"; src: url("/fonts/NewCMMath-Book.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: swap; }
-@font-face { font-family: "New Computer Modern Math"; src: url("/fonts/NewCMMath-Bold.woff2") format("woff2"); font-style: normal; font-weight: 700; font-display: swap; }
 @font-face { font-family: "JetBrains Mono"; src: url("/fonts/JetBrainsMono-Regular.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: swap; }
 :root { color-scheme: light; --paper: #fff; --ink: #000; --muted: #6b756f; --accent: #326c55; --line: #dedfd5; }
 * { box-sizing: border-box; }
@@ -59,8 +56,6 @@ article { font-size: 17px; max-width: 41.23em; margin-inline: auto; }
 .prose :not(pre) > code { padding: 0; }
 .prose img, .prose svg { max-width: 100%; height: auto; }
 .prose img { margin: 24px auto; }
-.prose math { font-family: "New Computer Modern Math", math; font-style: normal; font-weight: inherit; }
-.prose math[display="block"] { margin: .65em 0; padding: .2em 0; max-width: 100%; overflow-x: auto; overflow-y: hidden; }
 .prose blockquote { border-left: 3px solid var(--accent); margin-inline: 0; padding-left: 20px; color: var(--muted); }
 .prose table { border-collapse: collapse; max-width: 100%; }
 .prose td, .prose th { padding: 8px 14px; border: 1px solid var(--line); }
@@ -72,3 +67,21 @@ article { font-size: 17px; max-width: 41.23em; margin-inline: auto; }
   .post-list h3 { font-size: 18px; }
   article { font-size: 16px; }
 }
+
+/* Typst supplies em dimensions and a measured baseline. Never shrink a formula
+   independently of the surrounding text or recompute its internal layout. */
+.math-formula { position: relative; }
+.math-inline { display: inline-block; line-height: 0; max-width: 100%; }
+.math-visual { display: inline-block; max-width: 100%; vertical-align: bottom; }
+.prose .math-visual > svg { display: block; max-width: none; }
+.math-inline > .math-visual { display: block; }
+.math-display { display: block; text-align: center; margin-block: .65em; padding-block: .2em; }
+.math-display .math-visual, .math-inline .math-visual { overflow-x: auto; overflow-y: hidden; }
+/* Retain semantic MathML for assistive technology without a second visual copy. */
+.math-semantic, .math-copy-status { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.math-copy { position: absolute; right: 0; top: 100%; z-index: 2; opacity: 0; pointer-events: none; font: 12px/1.5 sans-serif; white-space: nowrap; padding: 3px 7px; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 3px; cursor: pointer; }
+.math-formula:hover > .math-copy, .math-formula:focus-within > .math-copy { opacity: 1; pointer-events: auto; }
+.math-copy:focus-visible { outline: 2px solid var(--accent); }
+.math-copy-dialog { width: min(600px, 90vw); border: 1px solid var(--line); padding: 20px; }
+.math-copy-dialog textarea { display: block; width: 100%; height: 180px; margin-block: 12px; }
+@media (hover: none) { .math-display > .math-copy { opacity: 1; pointer-events: auto; } }
