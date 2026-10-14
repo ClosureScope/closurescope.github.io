@@ -20,8 +20,3 @@ const { post } = Astro.props;
     <div class="prose" set:html={post.body} />
   </article>
 </Layout>
-
-<script>
-  import { enableMathCopy } from '../../scripts/math-copy.js';
-  enableMathCopy(document.querySelector('.prose'));
-</script>

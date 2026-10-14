@@ -142,7 +142,7 @@ pnpm dev
 当前边界：
 
 - HTML 不等同于 PDF 页面排版；分页、精确位置、复杂绘图或某些第三方包可能不支持，需要逐项验证。没有尝试把 PDF 模板强行搬进网页。
-- 数学由 Typst 的 `html.frame` 排版成 SVG；尺寸随正文字号缩放，长公式可横向滚动。复制功能提供 MathML 或作者描述，不提供原始 Typst/LaTeX 源码。详见 [SVG 数学公式](docs/svg-math.md)。
+- 数学由 Typst 的 `html.frame` 排版成 SVG；尺寸随正文字号缩放，长公式可横向滚动。保留隐藏的 MathML 或作者描述供辅助技术使用。详见 [SVG 数学公式](docs/svg-math.md)。
 - 图片内嵌会增大 HTML；少量技术插图足够，未来图片较多时再考虑独立资源输出。
 - Typst 尚不直接输出 HTML 片段。本项目针对固定版本的完整 HTML 提取 body 与 style，不解释 `.typ` 源码；升级编译器后需要重新验证输出结构。
 - 网站标题与导航由 Astro 显示；独立导出的 Typst HTML 和 PDF 在正文开头显示文章标题，没有扉页或自动目录。Typst 的字体设置不会自动变成网页 CSS，网页正文使用 `site/src/styles/global.css` 中的字体。`frame-it` 的 `definition` 已实际验证可导出 HTML；其他宏包功能需按需逐一验证。
@@ -157,7 +157,7 @@ Git 已初始化到 `main`；是否已连接远程仓库和发布，请以 `git 
 
 ### SVG 数学公式
 
-当前分支已用 Typst 原生 SVG 替换浏览器 MathML 视觉排版和对应补偿脚本。架构、复制能力、无障碍边界、测试方法见 [SVG 数学公式](docs/svg-math.md)。之前的 MathML 排查保留为历史记录。
+当前使用 Typst 原生 SVG 替换浏览器 MathML 视觉排版和对应补偿脚本。架构、无障碍边界、测试方法见 [SVG 数学公式](docs/svg-math.md)。之前的 MathML 排查保留为历史记录。
 
 ```bash
 pnpm exec playwright-core install chromium firefox

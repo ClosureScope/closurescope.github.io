@@ -20,7 +20,7 @@ test('SVG math preserves the PDF output', async () => {
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
 
-test('SVG formulas: baseline, scaling, references, copy, no JS and mobile overflow', async () => {
+test('SVG formulas: baseline, scaling, references, no JS and mobile overflow', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'svg-browser-'));
   let browser;
   try {
@@ -30,7 +30,6 @@ test('SVG formulas: baseline, scaling, references, copy, no JS and mobile overfl
     const body = namespaceSvgIds(exported.match(/<body[^>]*>([\s\S]*)<\/body>/)[1]);
     const article = await readFile('site/dist/posts/value-iteration/index.html', 'utf8');
     const css = article.match(/<link rel="stylesheet"[^>]*>/)[0];
-    const script = article.match(/<script type="module"[^>]*>[\s\S]*?<\/script>/)[0];
     const engine = process.env.MATH_BROWSER === 'firefox' ? firefox : chromium;
     browser = await engine.launch({ executablePath: process.env.CHROMIUM_PATH || undefined });
     const context = await browser.newContext();
@@ -38,7 +37,7 @@ test('SVG formulas: baseline, scaling, references, copy, no JS and mobile overfl
       const path = new URL(route.request().url()).pathname;
       if (path === '/fixture') {
         return route.fulfill({ contentType: 'text/html; charset=utf-8', body:
-          `<!doctype html><meta charset=utf-8>${css}<article><div class=prose>${body}</div></article>${script}` });
+          `<!doctype html><meta charset=utf-8>${css}<article><div class=prose>${body}</div></article>` });
       }
       const file = resolve('site/dist', `.${path.endsWith('/') ? path + 'index.html' : path}`);
       await route.fulfill({ body: await readFile(file), contentType: file.endsWith('.js') ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : file.endsWith('.woff2') ? 'font/woff2' : 'text/html; charset=utf-8' });
@@ -92,27 +91,14 @@ test('SVG formulas: baseline, scaling, references, copy, no JS and mobile overfl
         assert(Math.abs(result.width / size - initial.width / 17) < .02, 'formula scales in em');
       }
     }
-    await page.evaluate(() => {
-      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { window.copiedMath = text; } } });
-    });
-    await page.locator('.math-inline').first().dispatchEvent('pointerdown', { pointerType: 'touch' });
-    assert(await page.locator('.math-inline .math-copy').first().evaluate(button => document.activeElement === button), 'touch reveals inline copy');
-    await page.locator('.math-copy').first().focus();
-    await page.locator('.math-copy').first().click();
-    assert.match(await page.evaluate(() => window.copiedMath), /^<math[^>]*xmlns="http:\/\/www.w3.org\/1998\/Math\/MathML"/);
-    await page.evaluate(() => { navigator.clipboard.writeText = async () => { throw new Error('denied'); }; });
-    await page.locator('.math-copy').first().click();
-    await page.locator('dialog[open]').waitFor();
-    assert.match(await page.locator('dialog textarea').inputValue(), /<msqrt>/);
-    await page.keyboard.press('Escape');
-    await page.locator('dialog').waitFor({ state: 'detached' });
-
     const posts = JSON.parse(await readFile('.generated/posts.json', 'utf8'));
     for (const width of [1280, 390]) {
       await page.setViewportSize({ width, height: 900 });
       for (const post of posts) {
         await page.goto(`http://math.test/posts/${post.slug}/`);
         await page.evaluate(() => document.fonts.ready);
+        await page.locator('.math-formula').first().hover();
+        assert.equal(await page.locator('.math-copy').count(), 0, post.slug);
         const result = await check();
         assert(!result.overflow, post.slug);
         assert.equal(result.duplicates, 0, post.slug);
