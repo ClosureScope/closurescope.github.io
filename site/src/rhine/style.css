@@ -336,12 +336,14 @@ button {
 [data-mode="archive"] .column-navigation {
   display: flex;
 }
-.column-navigation button {
+.column-navigation button,
+.reading-toolbar button {
   width: 46px;
   height: 46px;
   font-size: 24px;
 }
-.column-navigation button:hover {
+.column-navigation button:hover,
+.reading-toolbar button:hover {
   background: #e4d5c1;
 }
 .column-navigation button:disabled {

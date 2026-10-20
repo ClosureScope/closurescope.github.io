@@ -146,6 +146,14 @@ try {
       const articleLeft = await reader.locator('article').evaluate(node => node.getBoundingClientRect().left);
       const backRect = await page.locator('[data-reader="back"]').boundingBox();
       assert(Math.abs(backRect.x - dimensions.x - articleLeft) < 1, 'return aligns with the article left edge');
+      assert(backRect.y + backRect.height <= dimensions.y + 1, 'return has its own space above the article viewport');
+      assert.equal((await page.locator('[data-reader="back"]').textContent()).trim(), '←', 'return uses only the column navigation arrow');
+      const arrowStyle = node => {
+        const style = getComputedStyle(node);
+        return { width: style.width, height: style.height, font: style.font };
+      };
+      assert.deepEqual(await page.locator('[data-reader="back"]').evaluate(arrowStyle),
+        await page.locator('[data-action="column-prev"]').evaluate(arrowStyle), 'return shares the column arrow size and typography');
       const embedded = await reader.locator('.prose').evaluate(typography);
       const original = await standalone.locator('.prose').evaluate(typography);
       const { width: embeddedWidth, ...embeddedStyle } = embedded;

@@ -17,7 +17,7 @@ export class BlogReader {
     this.root.setAttribute('aria-label', '文章阅读');
     this.root.hidden = true;
     this.root.innerHTML = `<nav class="reading-toolbar" aria-label="阅读导航">
-      <button type="button" data-reader="back" aria-label="返回文章选择">← <span>返回</span></button>
+      <button type="button" data-reader="back" aria-label="返回文章选择">←</button>
     </nav>`;
     this.toolbar = this.root.querySelector<HTMLElement>('.reading-toolbar')!;
     this.toolbar.inert = true;
