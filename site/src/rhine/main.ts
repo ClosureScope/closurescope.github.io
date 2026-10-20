@@ -831,6 +831,7 @@ function frame(ms: number) {
   scene?.update(time);
   if (threeState === "closing" && scene?.presentationHidden) releaseThree();
   playground?.position();
+  blogReader.setReveal(!scene || !motionActive("documentReveal") ? 1 : scene.detailVisibility);
   $("#stage").style.setProperty(
     "--detail-shade",
     String(scene?.detailVisibility ?? 0),

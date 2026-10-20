@@ -48,6 +48,7 @@ try {
       return s.extraction > 3.3 && s.cameraDetail > .98 && s.decryption.phase === 'clear';
     });
     const extracted = await page.evaluate(() => window.rhine.stats());
+    assert.equal(await page.locator('.blog-reader').evaluate(node => getComputedStyle(node).opacity), '1', 'the article is revealed with the scene transition');
     assert(extracted.modelPosition[1] > initial.modelPosition[1] + 2, 'the selected model physically rises out of the array');
     assert.notDeepEqual(extracted.cameraPosition, initial.cameraPosition, 'the camera moves with the extraction');
     assert.equal(await page.locator('#stage').getAttribute('inert'), null, 'the model stays interactive beside the reader');

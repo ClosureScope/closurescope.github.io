@@ -16,18 +16,18 @@ export class BlogReader {
     this.root.hidden = true;
     this.root.innerHTML = `<nav class="reading-toolbar" aria-label="阅读导航">
       <button type="button" data-reader="back" aria-label="返回文章选择">← <span>返回</span></button>
-      <span class="reading-brand">ClosureScope</span>
-      <div class="reading-tools"><button type="button" data-reader="directory">DIRECTORY</button><a class="reading-standalone" target="_top">独立阅读 ↗</a></div>
+      <div class="reading-tools"><a class="reading-standalone" target="_top">独立阅读 ↗</a></div>
     </nav>`;
     this.link = this.root.querySelector<HTMLAnchorElement>('.reading-standalone')!;
     this.root.querySelector('[data-reader="back"]')!.addEventListener('click', this.back);
-    this.root.querySelector('[data-reader="directory"]')!.addEventListener('click', this.directory);
     this.frame.className = 'blog-reader';
     this.frame.addEventListener('load', () => {
       const doc = this.frame.contentDocument;
       if (!doc) return;
       // Retain the original article title, prose, CSS, fonts and SVG math.
-      // Only the duplicate site navigation is hidden inside the reader.
+      // Hide duplicate navigation and let the original scene show through.
+      // This background change never alters prose typography or SVG math.
+      doc.body.style.backgroundColor = 'transparent';
       doc.querySelectorAll<HTMLElement>('.site-header, .article-meta .back-link').forEach(node => {
         node.hidden = true;
       });
@@ -63,11 +63,16 @@ export class BlogReader {
     this.visible = visible;
     this.root.inert = !visible;
     if (visible) {
+      this.frame.style.opacity = animated ? "0" : "1";
       this.transition.show(!animated);
       this.frame.focus();
     } else {
       this.transition.hide(!animated);
     }
+  }
+
+  setReveal(progress: number) {
+    if (this.visible) this.frame.style.opacity = String(progress);
   }
 
   dispose() { this.transition.dispose(); this.root.remove(); }

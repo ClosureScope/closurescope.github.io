@@ -116,14 +116,16 @@ try {
       await page.locator('.blog-reader').waitFor({ state: 'visible' });
       const dimensions = await page.locator('.blog-reader').boundingBox();
       const viewport = page.viewportSize();
-      assert(dimensions.width >= viewport.width * (legacy ? .9 : .58), 'reader preserves a generous reading width');
-      assert(dimensions.height >= viewport.height * (legacy ? .5 : .7), 'reader uses the height freed by removing detail metadata');
+      assert(dimensions.width >= viewport.width * (legacy ? .9 : .75), 'reader preserves a generous reading width');
+      assert(dimensions.height >= viewport.height * .7, 'reader uses the height freed by removing detail metadata');
       const panel = await page.locator('.reading-view').boundingBox();
-      assert(legacy ? panel.y >= viewport.height * .33 : panel.x >= viewport.width * .33, 'the model remains visible beside or above the reader');
+      assert(Math.abs(panel.x + panel.width / 2 - viewport.width / 2) < 1, 'reading area is centered without a reserved model column');
+      assert.equal(await page.locator('.reading-view').evaluate(node => getComputedStyle(node).boxShadow), 'none');
       assert(dimensions.x >= 0 && dimensions.x + dimensions.width <= viewport.width, 'reader fits inside the viewport');
       const reader = page.frameLocator('.blog-reader');
       await reader.locator('.prose').waitFor();
       await reader.locator('.site-header').waitFor({ state: 'hidden' });
+      assert.equal(await reader.locator('body').evaluate(node => getComputedStyle(node).backgroundColor), 'rgba(0, 0, 0, 0)', 'the scene shows through the article background');
       assert(await reader.locator('.article-header').isVisible(), 'original article title remains visible');
       const typography = prose => {
         const style = getComputedStyle(prose);
@@ -142,7 +144,7 @@ try {
       await reader.locator('body').press('Escape');
       assert.equal(await page.evaluate(() => window.rhine.stats().mode), 'archive');
       await page.locator('[data-action="open"]').first().click();
-      await page.locator('[data-reader="directory"]').click();
+      await page.locator('[data-action="search"]').click();
       await page.locator('#archive-search').waitFor({ state: 'visible' });
       await page.locator('.result-row').last().click();
       await page.waitForFunction(() => window.rhine.stats().mode === 'detail');

@@ -1,29 +1,27 @@
 /* These rules only style the archive shell. Article documents load their
    original global.css in an iframe, outside the scaled 3D stage. */
-/* The reader stays beside the live model, outside the scaled 3D stage. */
-.reading-view { position: fixed; top: 96px; right: 24px; bottom: 30px; left: 36%; z-index: 10; display: flex; flex-direction: column; background: white; color: #171713; border: 1px solid #d8d4cc; box-shadow: 0 12px 48px #29251c14; }
+/* Original scene presentation, enlarged and centered without a separate card. */
+.reading-view { position: fixed; top: 96px; bottom: 30px; left: 0; right: 0; width: min(1040px, calc(100% - 48px)); margin-inline: auto; z-index: 10; display: flex; flex-direction: column; background: transparent; color: #171713; }
 .reading-view[hidden] { display: none; }
-.reading-toolbar { display: flex; align-items: center; gap: 24px; flex: 0 0 auto; min-height: 48px; padding: 2px 18px; background: #e8e5e1; border-bottom: 1px solid #d8d4cc; }
+.reading-toolbar { display: flex; align-items: center; gap: 24px; flex: 0 0 auto; min-height: 48px; padding: 2px 0; }
 .reading-toolbar button, .reading-toolbar a { display: inline-flex; align-items: center; min-height: 44px; font-size: 12px; text-decoration: none; color: inherit; }
-.reading-toolbar button:hover, .reading-toolbar a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.reading-toolbar button:hover, .reading-toolbar a:hover { color: #946b3c; }
 .reading-toolbar a:focus-visible { outline: 2px solid #a67d48; outline-offset: 4px; }
-.reading-brand { font-size: 16px; font-weight: 700; letter-spacing: -.025em; }
 .reading-tools { margin-left: auto; display: flex; gap: 24px; align-items: center; }
-.blog-reader { display: block; flex: 1 1 0; min-height: 0; width: 100%; border: 0; background: white; }
+.blog-reader { display: block; flex: 1 1 0; min-height: 0; width: 100%; border: 0; background: transparent; }
+/* Extend the upstream paper-colored scene wash behind the centered text. */
+#stage .archive-atmosphere::after { background: linear-gradient(90deg, rgba(232,229,225,.8), rgba(232,229,225,.98) 24%, #e8e5e1 50%, rgba(232,229,225,.98) 76%, rgba(232,229,225,.8)); }
 @media (max-width: 600px) {
-  .reading-toolbar { min-height: 48px; padding-inline: max(12px, env(safe-area-inset-left)) max(12px, env(safe-area-inset-right)); gap: 12px; }
-  .reading-brand { display: none; }
+  .reading-view { top: 84px; bottom: max(12px, env(safe-area-inset-bottom)); width: calc(100% - 24px); }
+  .reading-toolbar { gap: 12px; }
   .reading-tools { gap: 16px; }
 }
-@media (max-aspect-ratio: 21/20) {
-  .reading-view { top: 36%; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); left: 12px; }
-}
 @media (max-height: 500px) and (min-aspect-ratio: 21/20) {
-  .reading-view { top: 76px; right: 12px; bottom: 12px; }
+  .reading-view { top: 76px; bottom: 12px; }
 }
 /* Desktop uses a scaled stage: keep the header inset in viewport pixels. */
 #stage[data-layout="desktop"] { --header-top: calc(max(20px, env(safe-area-inset-top)) / var(--scale, 1)); }
-#stage[data-layout="desktop"] .brand { top: var(--header-top); }
+#stage[data-layout="desktop"] .brand { top: var(--header-top); left: calc(24px / var(--scale, 1)); }
 #stage[data-layout="desktop"] .system-nav { top: calc(var(--header-top) + 10px); }
 .brand h1 { letter-spacing: -.025em; }
 .archive-callout .file-title { width: 100%; align-items: flex-start; text-align: left; white-space: normal; line-height: 1.25; }
@@ -42,3 +40,5 @@ noscript { position: fixed; inset: 0; background: #e8e5e1; padding: 32px; overfl
 :is([data-layout="compact"], [data-layout="portrait"]) .file-ticks { max-width: 180px; }
 :is([data-layout="compact"], [data-layout="portrait"]) .system-footer .footer-clock { display: none; }
 [data-layout="portrait"] .file-ticks { max-width: calc(100vw - 160px); }
+
+#stage:is([data-layout="compact"], [data-layout="portrait"]) .brand { left: max(12px, env(safe-area-inset-left)); }

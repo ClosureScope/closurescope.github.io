@@ -17,8 +17,8 @@ export function viewportLayout(width: number, height: number, coarse: boolean, c
 export function archiveFraming(width: number, height: number, span: number, detail: number, compact: boolean) {
   const aspect = width / height;
   const portrait = aspect < 1.05;
-  const baseSpan = span + (9 - span) * detail;
-  const portraitDetailSpan = Math.max(6.3 / aspect, 3.7 * height / Math.max(100, 0.36 * height - 100));
+  const baseSpan = span + (5.9 - span) * detail;
+  const portraitDetailSpan = Math.max(6.3 / aspect, 3.7 * height / Math.max(100, 0.54 * height - 156));
   const viewSpan = portrait
     ? Math.max(baseSpan, 8.4 / aspect + (portraitDetailSpan - 8.4 / aspect) * detail)
     : Math.max(baseSpan, baseSpan * (16 / 9) / aspect);
@@ -27,7 +27,7 @@ export function archiveFraming(width: number, height: number, span: number, deta
     portrait,
     // Portrait selection is deliberately above its title and navigation.
     previewY: portrait ? 0.36 : 0.5,
-    detailX: portrait ? 0.5 : 0.18,
-    detailY: portrait ? 0.22 : 0.52,
+    detailX: portrait ? 0.5 : compact ? 0.27 : 550 / 1920,
+    detailY: portrait ? 0.27 + 34 / height : compact ? 0.49 : 560 / 1080,
   };
 }
