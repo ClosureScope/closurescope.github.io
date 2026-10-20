@@ -136,7 +136,7 @@ const initialRenderPreset: QualityPreset = storedPrefs.renderPreset && Object.ha
 const prefs = {
   sound: storedPrefs.sound ?? true,
   music: storedPrefs.music ?? storedPrefs.sound ?? true,
-  soundVolume: storedPrefs.soundVolume ?? 0.55,
+  soundVolume: storedPrefs.soundVolume ?? 0.5,
   musicVolume: storedPrefs.musicVolume ?? 0.5,
   motion: initialMotion,
   motionPreset: initialMotionPreset,

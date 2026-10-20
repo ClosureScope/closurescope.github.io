@@ -297,7 +297,7 @@ export class TerminalAudio {
   private prefs: AudioPreferences = {
     sound: false,
     music: false,
-    soundVolume: 0.55,
+    soundVolume: 0.5,
     musicVolume: 0.5,
   };
   private context?: AudioContext;
