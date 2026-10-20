@@ -45,6 +45,8 @@ try {
     });
     await page.waitForFunction(() => window.rhine.stats().decryption.intervals.length > 0);
     assert.equal(await page.locator('.blog-reader').evaluate(node => getComputedStyle(node).opacity), '0', 'scanning marks finish before the article is revealed');
+    assert.equal(await page.locator('.reading-toolbar').evaluate(node => getComputedStyle(node).opacity), '0', 'return stays hidden until the article appears');
+    assert.equal(await page.locator('.reading-toolbar').evaluate(node => node.inert), true, 'hidden return cannot receive focus');
     assert((await page.locator('.scene-visuals').evaluate(node => getComputedStyle(node).filter)).includes('blur(0px)'), 'the complete scene stays sharp during extraction and scanning');
     assert(await page.locator('.reading-view').evaluate(node => parseInt(getComputedStyle(node).zIndex) > parseInt(getComputedStyle(document.querySelector('#viewport')).zIndex)), 'the scene cannot paint above the reader');
     await page.waitForFunction(() => {
@@ -53,7 +55,8 @@ try {
     });
     const extracted = await page.evaluate(() => window.rhine.stats());
     await page.waitForFunction(() => getComputedStyle(document.querySelector('.blog-reader')).opacity === '1' &&
-      getComputedStyle(document.querySelector('.scene-visuals')).filter.includes('blur(14px)'));
+      getComputedStyle(document.querySelector('.scene-visuals')).filter.includes('blur(14px)') &&
+      getComputedStyle(document.querySelector('.reading-toolbar')).opacity === '1');
     assert(extracted.modelPosition[1] > initial.modelPosition[1] + 2, 'the selected model physically rises out of the array');
     assert.notDeepEqual(extracted.cameraPosition, initial.cameraPosition, 'the camera moves with the extraction');
     assert.equal(await page.locator('#stage').getAttribute('inert'), null, 'the model stays interactive beside the reader');

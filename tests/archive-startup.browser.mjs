@@ -77,6 +77,9 @@ try {
       assert.equal(await page.locator('[data-motion="boot"]').count(), 0);
       await page.locator('[data-action="motion-preset"][data-preset="reduced"]').click();
       await page.locator('[data-action="motion-preset"][data-preset="full"]').click();
+      // This UI smoke check pauses scene RAF; full animation sequencing is
+      // exercised separately with the live scene in archive-scene.browser.mjs.
+      await page.locator('[data-action="motion-preset"][data-preset="reduced"]').click();
       assert.equal(await page.evaluate(() => window.rhine.stats().mode), 'archive');
       await page.locator('[data-action="close-modal"]').click();
       const firstCategory = posts[0].category;
@@ -136,14 +139,30 @@ try {
           width: prose.getBoundingClientRect().width, html: prose.innerHTML };
       };
       const standalone = await context.newPage();
-      await standalone.setViewportSize(await reader.locator('body').evaluate(() => ({ width: innerWidth, height: innerHeight })));
+      const zoom = await reader.locator('body').evaluate(node => Number(getComputedStyle(node).zoom));
+      assert.equal(zoom, legacy ? 1.125 : 1.18);
+      await standalone.setViewportSize(await reader.locator('body').evaluate(node => ({
+        width: Math.round(innerWidth / Number(getComputedStyle(node).zoom)), height: innerHeight,
+      })));
       await standalone.goto(`http://archive.test/posts/${target.slug}/`);
       await standalone.evaluate(() => document.fonts.ready);
       await reader.locator('body').evaluate(() => document.fonts.ready);
       const articleLeft = await reader.locator('article').evaluate(node => node.getBoundingClientRect().left);
       const backRect = await page.locator('[data-reader="back"]').boundingBox();
       assert(Math.abs(backRect.x - dimensions.x - articleLeft) < 1, 'return aligns with the article left edge');
-      assert.deepEqual(await reader.locator('.prose').evaluate(typography), await standalone.locator('.prose').evaluate(typography), 'embedded prose, fonts and SVG match the standalone article');
+      const embedded = await reader.locator('.prose').evaluate(typography);
+      const original = await standalone.locator('.prose').evaluate(typography);
+      assert(Math.abs(embedded.width - original.width * zoom) < 1, 'the original text area is enlarged proportionally');
+      const { width: embeddedWidth, ...embeddedStyle } = embedded;
+      const { width: originalWidth, ...originalStyle } = original;
+      assert.deepEqual(embeddedStyle, originalStyle, 'original font properties, prose and SVG markup are preserved');
+      const svgSize = node => ({ width: node.getBoundingClientRect().width, height: node.getBoundingClientRect().height });
+      const embeddedSvg = reader.locator('.math-visual > svg').first();
+      if (await embeddedSvg.count()) {
+        const a = await embeddedSvg.evaluate(svgSize);
+        const b = await standalone.locator('.math-visual > svg').first().evaluate(svgSize);
+        assert(Math.abs(a.width - b.width * zoom) < 1 && Math.abs(a.height - b.height * zoom) < 1, 'math scales together with the text');
+      }
       await standalone.close();
       await reader.locator('body').evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
       assert(await reader.locator('body').evaluate(() => scrollY > 0 && scrollY + innerHeight >= document.documentElement.scrollHeight - 1), 'last lines are reachable by scrolling');

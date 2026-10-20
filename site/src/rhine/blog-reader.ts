@@ -6,6 +6,7 @@ export class BlogReader {
   private scene = document.querySelector<HTMLElement>('.scene-visuals')!;
   private resizeObserver: ResizeObserver;
   private frame = document.createElement('iframe');
+  private toolbar: HTMLElement;
   private href = '';
   private transition: SurfaceTransition;
   private visible = false;
@@ -18,25 +19,29 @@ export class BlogReader {
     this.root.innerHTML = `<nav class="reading-toolbar" aria-label="阅读导航">
       <button type="button" data-reader="back" aria-label="返回文章选择">← <span>返回</span></button>
     </nav>`;
+    this.toolbar = this.root.querySelector<HTMLElement>('.reading-toolbar')!;
+    this.toolbar.inert = true;
     this.root.querySelector('[data-reader="back"]')!.addEventListener('click', this.back);
     this.frame.className = 'blog-reader';
     this.frame.addEventListener('load', () => {
       const doc = this.frame.contentDocument;
       if (!doc) return;
-      this.alignControls();
       // Retain the original article title, prose, CSS, fonts and SVG math.
       // Hide duplicate navigation and let the original scene show through.
-      // This background change never alters prose typography or SVG math.
+      // Scale the original document uniformly, including all SVG math units.
       doc.body.style.backgroundColor = 'transparent';
       // Hide only the document scrollbar; preserve scrolling and the local
       // horizontal scroll containers used by long formulas and code blocks.
       const chromeStyle = doc.createElement('style');
       chromeStyle.textContent = `html { scrollbar-width: none; }
-        html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; }`;
+        html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; }
+        body { zoom: 1.18; }
+        @media (max-width: 600px) { body { zoom: 1.125; } }`;
       doc.head.append(chromeStyle);
       doc.querySelectorAll<HTMLElement>('.site-header, .article-meta .back-link').forEach(node => {
         node.hidden = true;
       });
+      this.alignControls();
       doc.addEventListener('keydown', event => {
         const target = event.target as HTMLElement;
         if (target.matches('input, textarea, select, [contenteditable="true"]')) return;
@@ -84,6 +89,9 @@ export class BlogReader {
   setReveal(progress: number) {
     if (!this.visible) return;
     this.frame.style.opacity = String(progress);
+    this.toolbar.style.opacity = String(progress);
+    this.toolbar.inert = progress < .99;
+    this.toolbar.setAttribute('aria-hidden', String(progress < .99));
     this.setSceneReveal(progress);
   }
 
