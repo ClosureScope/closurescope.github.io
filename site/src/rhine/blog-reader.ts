@@ -37,7 +37,7 @@ export class BlogReader {
       const chromeStyle = doc.createElement('style');
       chromeStyle.textContent = `html { scrollbar-width: none; }
         html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; }
-        main { padding-top: max(80px, env(safe-area-inset-top)); }
+        main { padding-top: max(0px, calc(max(80px, env(safe-area-inset-top)) - var(--reader-top, 0px))); }
         @media (min-width: 601px) {
           main { width: min(1040px, calc(100% - 48px)); }
           article { max-width: 54em; }
@@ -46,7 +46,7 @@ export class BlogReader {
           main { width: calc(100% - 120px); }
         }
         @media (max-width: 600px) {
-          main { width: calc(100% - 104px); padding-top: max(72px, env(safe-area-inset-top)); }
+          main { width: calc(100% - 104px); padding-top: max(0px, calc(max(72px, env(safe-area-inset-top)) - var(--reader-top, 0px))); }
         }`;
       doc.head.append(chromeStyle);
       doc.querySelectorAll<HTMLElement>('.site-header, .article-meta .back-link').forEach(node => {
@@ -123,6 +123,9 @@ export class BlogReader {
   }
 
   private alignControls() {
+    const top = Math.max(0, this.headers[0].getBoundingClientRect().top);
+    this.root.style.setProperty('--reader-top', `${top}px`);
+    this.frame.contentDocument?.documentElement.style.setProperty('--reader-top', `${top}px`);
     const article = this.frame.contentDocument?.querySelector('article');
     if (article) this.root.style.setProperty('--reader-content-left', `${article.getBoundingClientRect().left}px`);
   }

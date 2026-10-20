@@ -119,8 +119,9 @@ try {
       await page.locator('.blog-reader').waitFor({ state: 'visible' });
       const dimensions = await page.locator('.blog-reader').boundingBox();
       const viewport = page.viewportSize();
-      assert.equal(dimensions.y, 0, 'article scrolling reaches the top of the screen');
-      assert.equal(dimensions.height, viewport.height, 'article scrolling uses the full screen height');
+      const brand = await page.locator('header.brand').boundingBox();
+      assert(Math.abs(dimensions.y - brand.y) < 1, 'article scrolling clips at the top edge of ClosureScope');
+      assert(Math.abs(dimensions.y + dimensions.height - viewport.height) < 1, 'article scrolling still reaches the screen bottom');
       assert(dimensions.width >= viewport.width * (legacy ? .9 : .75), 'reader preserves a generous reading width');
       assert(dimensions.height >= viewport.height * .7, 'reader uses the height freed by removing detail metadata');
       const panel = await page.locator('.reading-view').boundingBox();
