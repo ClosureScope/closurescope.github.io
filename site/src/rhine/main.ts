@@ -17,8 +17,6 @@ import "./style.css";
 import "./quality-settings.css";
 import "./responsive.css";
 import { viewportLayout } from "./viewport-layout";
-import { assetUrl } from "./asset-url";
-import { pwaSettingsMarkup } from "./pwa";
 import {
   createRollingNumber,
   createRollingText,
@@ -40,8 +38,6 @@ import {
   fullMotion,
   motionEnabled,
   motionPresetFor,
-  motionSettingsMarkup,
-  motionSummary,
   reducedMotion,
   type MotionKey,
   type MotionPreset,
@@ -57,7 +53,7 @@ import "./wallpaper.css";
 import { Workbench } from "./workbench";
 let workbench: Workbench | undefined;
 import { ArchivePlayground } from "./archive-playground";
-import { paintTheme, themeSettingsMarkup } from "./theme-ui";
+import { paintTheme } from "./theme-ui";
 let playground: ArchivePlayground | undefined;
 import { WallpaperEffects } from "./wallpaper-effects";
 import { WallpaperBackground } from "./wallpaper-background";
@@ -530,15 +526,10 @@ function updateQualitySummary() {
   const metrics = JSON.parse(
     canvas.parentElement?.dataset.renderQuality ?? "{}",
   );
-  summary.textContent = `${superPerformanceEnabled() ? "超级性能模式已启用 · 画质设置暂被覆盖，关闭后恢复 · " : ""}实际渲染 ${canvas.width} × ${canvas.height} · ${effectiveRenderQuality().antialias === "smaa" ? "SMAA" : "原始抗锯齿"} · 纹理 ${metrics.anisotropy ?? 1}×${metrics.limited ? " · 已达到缓冲上限" : ""}`;
-}
-function motionPreferenceNoteMarkup() {
-  const preset = prefs.motionPreset;
-  const allEnabled = Object.values(prefs.motion).every(Boolean);
-  return `<div id="motion-preference-note" class="motion-preference-note"><p>${motionSummary(prefs.motion)}</p><span>预设：${preset === "full" ? "完整动画" : preset === "reduced" ? "减少动画" : "自定义"} · 选择会保存在本站</span>${allEnabled ? "" : '<button data-action="enable-motion">启用完整动画</button>'}</div>`;
+  summary.textContent = `${superPerformanceEnabled() ? "低负载画质 · 调整画质后应用新设置 · " : ""}实际渲染 ${canvas.width} × ${canvas.height} · ${effectiveRenderQuality().antialias === "smaa" ? "SMAA" : "原始抗锯齿"} · 纹理 ${metrics.anisotropy ?? 1}×${metrics.limited ? " · 已达到缓冲上限" : ""}`;
 }
 function settingsMarkup() {
-  return `<h2>SYSTEM SETTINGS<small>终端偏好设置</small></h2><p class="settings-intro">ClosureScope</p>${isWallpaper ? '<p class="wallpaper-settings-note">每次启动都会读取 Wallpaper Engine 中的设置。在此修改仅对当前运行生效，无法持久保存；如需保留，请在 Wallpaper Engine 的壁纸属性中调整。</p>' : ""}<div class="settings-list">${themeSettingsMarkup(prefs.colorTheme === "dark")}${!isWallpaper ? `<label><div><strong>SUPER PERFORMANCE</strong><span>降低三维画质和渲染分辨率，保留完整动效；关闭后恢复原画质</span></div><input type="checkbox" data-pref="superPerformance" ${prefs.superPerformance ? "checked" : ""}/><i class="toggle"></i></label>` : ""}${workbench?.settingsMarkup() ?? ""}${audioSettingsMarkup(prefs)}</div>${motionPreferenceNoteMarkup()}${motionSettingsMarkup(prefs.motion, prefs.motionPreset)}${qualityMarkup(prefs.rendering)}${pwaSettingsMarkup()}<div class="settings-shortcuts">${isWallpaper ? "<span>DESKTOP CONTROLS</span><p>拖动阵列或点击界面按钮浏览文章。桌面模式下，方向键与滚轮可能无法传入壁纸。</p>" : "<span>KEYBOARD CONTROLS</span><p><kbd>←</kbd><kbd>→</kbd> 切列 <kbd>↑</kbd><kbd>↓</kbd> 选文章 <kbd>ENTER</kbd> 读取 <kbd>/</kbd> 检索 <kbd>ESC</kbd> 返回</p>"}</div><div class="settings-bottom">${!isWallpaper && document.fullscreenEnabled ? '<button data-action="fullscreen">FULLSCREEN <span>↗</span></button>' : ""}</div><div class="modal-bottom"><span>ClosureScope · 使用 MiSans 字体（小米） <a href="${assetUrl("fonts/MiSans-license.pdf")}" target="_blank" rel="noopener">字体许可</a></span></div>`;
+  return `<h2>SETTINGS<small>设置</small></h2><div class="settings-list">${audioSettingsMarkup(prefs)}</div>${qualityMarkup(prefs.rendering)}<div class="settings-bottom">${!isWallpaper && document.fullscreenEnabled ? '<button data-action="fullscreen">全屏 <span>↗</span></button>' : ""}</div>`;
 }
 
 document.addEventListener("input", (e) => {
@@ -569,9 +560,11 @@ document.addEventListener("input", (e) => {
 document.addEventListener("change", (e) => {
   const el = e.target as HTMLInputElement;
   if (el.id === "quality-preset" && Object.hasOwn(qualityPresets, el.value)) {
+    prefs.superPerformance = false;
     prefs.rendering = { ...qualityPresets[el.value as QualityPreset] };
     savePrefs();
   } else if (el.dataset.quality) {
+    prefs.superPerformance = false;
     const key = el.dataset.quality as keyof RenderQuality;
     prefs.rendering = normalizeQuality({
       ...prefs.rendering,
@@ -592,66 +585,12 @@ document.addEventListener("change", (e) => {
     else savePrefs();
     audio.play("confirm");
   }
-  if (el.dataset.motion) {
-    const key = el.dataset.motion as MotionKey;
-    prefs.motion[key] = el.checked;
-    prefs.motionPreset = motionPresetFor(prefs.motion);
-    savePrefs();
-    const motionRoot = $("#motion-settings");
-    const advancedOpen =
-      motionRoot.querySelector<HTMLDetailsElement>(".motion-advanced")?.open ??
-      false;
-    const settingsPanel = motionRoot.closest<HTMLElement>(".settings-modal");
-    const scrollTop = settingsPanel?.scrollTop ?? 0;
-    motionRoot.outerHTML = motionSettingsMarkup(
-      prefs.motion,
-      prefs.motionPreset,
-    );
-    $("#motion-preference-note").outerHTML = motionPreferenceNoteMarkup();
-    $("#motion-settings").querySelector<HTMLDetailsElement>(
-      ".motion-advanced",
-    )!.open = advancedOpen;
-    requestAnimationFrame(() => {
-      if (settingsPanel) settingsPanel.scrollTop = scrollTop;
-      document
-        .querySelector<HTMLInputElement>(`[data-motion="${key}"]`)
-        ?.focus({ preventScroll: true });
-    });
-    notify(el.checked ? "已启用此动画" : "已关闭此动画");
-    audio.play("confirm");
-  }
 });
 document.addEventListener("click", (e) => {
-  const themeButton = (e.target as Element).closest<HTMLElement>(
-    "[data-color-theme]",
-  );
-  if (themeButton) {
-    prefs.colorTheme =
-      themeButton.dataset.colorTheme === "dark" ? "dark" : "light";
-    savePrefs();
-    return;
-  }
   if (!started) return;
   if (modalClosing) return;
   const el = (e.target as Element).closest<HTMLElement>("button");
   if (!el) return;
-  if (el.dataset.action === "motion-preset") {
-    const preset = el.dataset.preset;
-    if (preset !== "full" && preset !== "reduced") return;
-    prefs.motionPreset = preset;
-    prefs.motion = preset === "full" ? fullMotion() : reducedMotion();
-    savePrefs();
-    renderModal();
-    requestAnimationFrame(() =>
-      document
-        .querySelector<HTMLButtonElement>(
-          `[data-action="motion-preset"][data-preset="${prefs.motionPreset}"]`,
-        )
-        ?.focus({ preventScroll: true }),
-    );
-    audio.play("confirm");
-    return;
-  }
   if (el.dataset.select) {
     select(Number(el.dataset.select));
     return;
@@ -703,11 +642,6 @@ document.addEventListener("click", (e) => {
     searchQuery = "";
     filter = "全部文章";
     renderModal();
-  }
-  if (action === "enable-motion") {
-    prefs.motion = fullMotion();
-    prefs.motionPreset = "full";
-    savePrefs();
   }
   if (action === "fullscreen" && document.fullscreenEnabled) {
     if (document.fullscreenElement) void document.exitFullscreen();

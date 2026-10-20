@@ -38,6 +38,7 @@ try {
     }
     await page.waitForFunction(() => window.rhine?.stats().ready && window.rhine.stats().renderedFrames > 2);
     const initial = await page.evaluate(() => window.rhine.stats());
+    const openedAt = await page.evaluate(() => performance.now());
     await page.locator('[data-action="open"]').first().click();
     await page.waitForFunction(() => {
       const s = window.rhine.stats();
@@ -59,7 +60,15 @@ try {
       getComputedStyle(document.querySelector('.reading-toolbar')).opacity === '1');
     assert(extracted.modelPosition[1] > initial.modelPosition[1] + 2, 'the selected model physically rises out of the array');
     assert.notDeepEqual(extracted.cameraPosition, initial.cameraPosition, 'the camera moves with the extraction');
-    assert.equal(await page.locator('#stage').getAttribute('inert'), null, 'the model stays interactive beside the reader');
+    const entryDuration = await page.evaluate(start => performance.now() - start, openedAt);
+    assert(entryDuration < 5000, `article entrance should complete promptly, took ${Math.round(entryDuration)}ms`);
+    assert.equal(extracted.canInspect, false, 'the reading model cannot be rotated');
+    const canvas = page.locator('#three-scene canvas').first();
+    await canvas.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'mouse', button: 0, clientX: 100, clientY: 200 });
+    await canvas.dispatchEvent('pointermove', { pointerId: 1, pointerType: 'mouse', clientX: 300, clientY: 200 });
+    await canvas.dispatchEvent('pointerup', { pointerId: 1, pointerType: 'mouse', clientX: 300, clientY: 200 });
+    assert.equal(await page.evaluate(() => window.rhine.stats().rotation), 0, 'dragging cannot rotate the reading model');
+    console.log(`Article visible in ${Math.round(entryDuration)}ms / ${portrait ? 'mobile' : 'desktop'}`);
     await page.frameLocator('.blog-reader').locator('.prose').waitFor();
     await page.locator('[data-reader="back"]').click();
     await page.waitForFunction(() => {

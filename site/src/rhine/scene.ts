@@ -196,7 +196,7 @@ export class ArchiveScene {
   private laneFocus = { value: 2, velocity: 0 };
   private columnCamera = { value: 0, velocity: 0 };
   private returnY: number | null = null;
-  private canInspect = false;
+  private readonly canInspect = false;
   private clearance = 0;
   private pulseGain = 1;
   private idleGain = 0;
@@ -221,7 +221,6 @@ export class ArchiveScene {
   private targetReveal = 0;
   private last = 0;
   private pointer = new THREE.Vector2();
-  private dragging = false;
   private hoverCell: ArchiveCell | null = null;
   private hoverLifts = new Map<string, number>();
   private archiveDrag = new ArchiveDrag();
@@ -233,7 +232,6 @@ export class ArchiveScene {
   private pendingHover: Pick<PointerEvent, 'clientX' | 'clientY' | 'pointerType'> | null = null;
   private flushHover = () => {};
   private rotation = 0;
-  private targetRotation = 0;
   private light: THREE.DirectionalLight;
   private clock = 0;
   private loaded = false;
@@ -594,9 +592,7 @@ export class ArchiveScene {
     this.lastInteraction = this.clock;
     this.targetReveal = mode === "hidden" ? 0 : 1;
     this.targetDetail = mode === "detail" ? 1 : 0;
-    this.dragging = false;
     if (mode !== "detail") {
-      this.targetRotation = 0;
       if (this.rotation !== 0) this.returnY = this.model.position.y;
     } else this.returnY = null;
   }
@@ -774,7 +770,6 @@ export class ArchiveScene {
     if (this.deferSelectionPulse) {
       this.pendingPulse = this.looping ? { ...cell } : null;
     } else this.emitPulse(cell);
-    this.targetRotation = 0;
     this.drawLabel(index);
   }
   private emitPulse(cell: ArchiveCell) {
@@ -993,8 +988,7 @@ export class ArchiveScene {
   private bindPointer() {
     const canvas = this.renderer.domElement;
     let activePointer: number | null = null;
-    let previousX = 0,
-      startX = 0,
+    let startX = 0,
       startY = 0,
       moved = false;
     let browse = false,
@@ -1028,7 +1022,6 @@ export class ArchiveScene {
       this.pendingHover = null;
       const id = activePointer;
       activePointer = null;
-      this.dragging = false;
       this.dragTrack = null;
       this.holdingArchive = false;
       browse = false;
@@ -1072,7 +1065,7 @@ export class ArchiveScene {
     };
     canvas.addEventListener("pointerdown", (e) => {
       if (e.pointerType === "mouse" && e.button !== 0) return;
-      if (!this.canBrowse() && !this.canInspect) return;
+      if (!this.canBrowse()) return;
       this.pendingHover = null;
       pointers.add(e.pointerId);
       if (pointers.size > 1) {
@@ -1083,7 +1076,7 @@ export class ArchiveScene {
       activePointer = e.pointerId;
       cancelled = false;
       moved = this.archiveMomentum !== null;
-      startX = previousX = e.clientX;
+      startX = e.clientX;
       startY = e.clientY;
       browse = this.canBrowse();
       this.stopMomentum();
@@ -1092,12 +1085,11 @@ export class ArchiveScene {
         this.rail.velocity = 0;
       }
       this.holdingArchive = browse;
-      this.dragging = !browse && this.canInspect;
       startTrack = { lane: this.columnCamera.value, row: this.rail.value };
       this.archiveDrag.start(e.clientX, e.clientY, this.dragProjection(), e.timeStamp);
       this.setHover(null);
       canvas.setPointerCapture(e.pointerId);
-      if (this.relayActive) { this.holdingArchive = false; this.dragging = false; }
+      if (this.relayActive) this.holdingArchive = false;
     }, { signal: this.inputEvents.signal });
     canvas.addEventListener("pointermove", (e) => {
       if (this.relayActive) {
@@ -1119,14 +1111,6 @@ export class ArchiveScene {
         }
         moveArchive(e);
         return;
-      }
-      if (this.dragging && this.canInspect) {
-        this.targetRotation = THREE.MathUtils.clamp(
-          this.targetRotation + (e.clientX - previousX) * 0.004,
-          -0.8,
-          0.8,
-        );
-        previousX = e.clientX;
       }
     }, { signal: this.inputEvents.signal });
     canvas.addEventListener("pointerup", (e) => {
@@ -1242,12 +1226,12 @@ export class ArchiveScene {
     this.theme.beginFrame();
     themeEnvironment(this.scene, this.renderer, this.themeAmount);
     const blend = 1 - Math.exp(-dt * (this.motion.selectionTransition ? 2.8 : 35));
-    const detailBlend = 1 - Math.exp(-dt * (this.motion.detailTransition ? 2.8 : 35));
+    const detailBlend = 1 - Math.exp(-dt * (this.motion.detailTransition ? 6 : 35));
     this.reveal = cinematic
       ? cinematic.reveal
       : THREE.MathUtils.lerp(this.reveal, this.targetReveal, blend);
     this.rotation = this.targetDetail
-      ? THREE.MathUtils.lerp(this.rotation, this.targetRotation, detailBlend)
+      ? 0
       : returnStep(this.rotation, dt, !this.motion.detailTransition);
     const shot = cinematic?.time ?? 29.1;
     if (cinematic) {
@@ -1434,7 +1418,9 @@ export class ArchiveScene {
                 !this.targetDetail &&
                 this.lift.value < 0.4
               ? 7.6
-              : 4.2,
+              : this.targetDetail
+                ? 8.4
+                : 4.2,
           dt,
         );
       }
@@ -1667,7 +1653,7 @@ export class ArchiveScene {
     const cameraPosition = cameraAim
       .clone()
       .addScaledVector(viewDirection, distance);
-    if (!cinematic && this.motion.pointerParallax && !this.uiOnlyParallax) {
+    if (!cinematic && !this.targetDetail && this.motion.pointerParallax && !this.uiOnlyParallax) {
       cameraPosition.x += this.pointer.x * 0.12;
       cameraPosition.y -= this.pointer.y * 0.12;
     }
@@ -1757,17 +1743,11 @@ export class ArchiveScene {
       }
     }
     this.clearance = this.model.position.y - neighborTop;
-    this.canInspect =
-      !cinematic &&
-      Boolean(this.targetDetail) &&
-      detail > 0.9 &&
-      this.pulseGain < 0.01 &&
-      this.clearance > 0.3;
     this.container.dataset.inspection =
       this.returnY !== null
         ? "aligning"
-        : this.canInspect
-          ? "ready"
+        : this.targetDetail && detail > .98
+          ? "fixed"
           : this.targetDetail
             ? "lifting"
             : "preview";

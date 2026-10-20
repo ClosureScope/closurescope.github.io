@@ -2,7 +2,7 @@
 // seconds, unlike the camera's historical (original minus five) time convention.
 export const DECRYPTION_START = 34.12;
 export const DECRYPTION_END = 39.56;
-const INTERACTIVE_RATE = 1.5;
+const INTERACTIVE_RATE = 3.5;
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
 const smooth = (value: number) => {
   const x = clamp(value);

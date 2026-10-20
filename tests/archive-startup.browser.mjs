@@ -16,8 +16,10 @@ try {
       viewport: legacy ? { width: 390, height: 844 } : { width: 1280, height: 800 },
     });
     await context.addInitScript(legacy => {
+      // UI navigation runs without scene RAF; animation sequencing is tested
+      // separately against the live scene.
+      localStorage.setItem('closurescope-rhine-settings', JSON.stringify({ reduced: true, ...(legacy ? { motion: { boot: true } } : {}) }));
       if (legacy) {
-        localStorage.setItem('closurescope-rhine-settings', JSON.stringify({ motion: { boot: true } }));
         localStorage.setItem('closurescope-saved', JSON.stringify(['old-article']));
       }
       // Pause only expensive 3D drawing in this software-rendered smoke test.
@@ -74,12 +76,14 @@ try {
       assert(heading.right <= heading.viewport && heading.scrollWidth <= heading.width + 1, 'article heading fits without clipping');
       assert.equal(await page.locator('#three-scene').evaluate(node => getComputedStyle(node).opacity), '1');
       await page.locator('[data-action="settings"]').click();
-      assert.equal(await page.locator('[data-motion="boot"]').count(), 0);
-      await page.locator('[data-action="motion-preset"][data-preset="reduced"]').click();
-      await page.locator('[data-action="motion-preset"][data-preset="full"]').click();
-      // This UI smoke check pauses scene RAF; full animation sequencing is
-      // exercised separately with the live scene in archive-scene.browser.mjs.
-      await page.locator('[data-action="motion-preset"][data-preset="reduced"]').click();
+      assert.equal(await page.locator('[data-motion], [data-action="motion-preset"], [data-color-theme], [data-pref="superPerformance"], [data-workbench-mode], .pwa-settings, .settings-shortcuts').count(), 0, 'settings contain no removed controls');
+      assert.deepEqual(await page.locator('.settings-modal [data-pref]').evaluateAll(nodes => nodes.map(node => node.dataset.pref).sort()), ['music', 'sound']);
+      assert.equal(await page.locator('#quality-preset').count(), 1);
+      assert.equal(await page.locator('[data-action="fullscreen"]').count(), await page.evaluate(() => Number(document.fullscreenEnabled)));
+      await page.locator('#quality-preset').selectOption('performance');
+      assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('closurescope-rhine-settings')).rendering.scale), 80, 'quality remains configurable');
+      await page.locator('[data-pref="music"]').uncheck();
+      assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('closurescope-rhine-settings')).music), false, 'music settings are saved');
       assert.equal(await page.evaluate(() => window.rhine.stats().mode), 'archive');
       await page.locator('[data-action="close-modal"]').click();
       const firstCategory = posts[0].category;
