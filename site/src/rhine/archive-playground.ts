@@ -58,7 +58,7 @@ export class ArchivePlayground {
     this.closing = false;
     this.round.start(); this.previousTarget = "";
     this.score.textContent = "00";
-    this.message.textContent = "点击抬起的档案，接住下一道波纹";
+    this.message.textContent = "点击抬起的文章，接住下一道波纹";
     this.retry.hidden = true;
     this.bar.style.transform = "scaleX(0)";
     this.showMarker(false);
@@ -153,7 +153,7 @@ export class ArchivePlayground {
         this.previousTarget = key;
         const pace = this.props.gamepace?.value;
         this.round.aim(key, pace === "gentle" || pace === "quick" ? pace : "normal");
-      } else this.round.finish("这一侧没有可接力的档案，请退出后移动阵列再试");
+      } else this.round.finish("这一侧没有可接力的文章，请退出后移动阵列再试");
     }
     const over = this.round.status === "over";
     // Keep the game isolated until the user exits, including its result screen.
@@ -171,7 +171,7 @@ export class ArchivePlayground {
     this.retry.hidden = !over;
     const score = String(this.round.score).padStart(2, "0");
     if (this.score.textContent !== score) this.score.textContent = score;
-    const message = over ? this.round.reason : context.paused ? "已暂停" : "点击抬起的档案，接住下一道波纹";
+    const message = over ? this.round.reason : context.paused ? "已暂停" : "点击抬起的文章，接住下一道波纹";
     if (this.message.textContent !== message) this.message.textContent = message;
     this.bar.style.transform = `scaleX(${this.round.status === "playing" ? this.round.remaining / this.round.total : 0})`;
     this.position();

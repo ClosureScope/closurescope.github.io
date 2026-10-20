@@ -126,7 +126,7 @@ export class Workbench {
     this.renderPanel();
   }
   settingsMarkup() {
-    return `<div class="wb-settings"><strong>工作模式</strong><div><button data-workbench-mode="workbench" aria-pressed="${this.enabled}">桌面工作台</button><button data-workbench-mode="archive" aria-pressed="${!this.enabled}">档案展示</button></div><p>事项、日程和计时时长请在 Wallpaper Engine 属性中填写。事项完成状态按天保存，计时进度单独保留。</p><p>工作台元素与设置入口的显示开关位于 Wallpaper Engine 的壁纸属性中。全部关闭后只显示档案阵列；需要恢复时从那里重新打开。隐藏专注内容不会停止计时。</p></div>`;
+    return `<div class="wb-settings"><strong>工作模式</strong><div><button data-workbench-mode="workbench" aria-pressed="${this.enabled}">桌面工作台</button><button data-workbench-mode="archive" aria-pressed="${!this.enabled}">文章展示</button></div><p>事项、日程和计时时长请在 Wallpaper Engine 属性中填写。事项完成状态按天保存，计时进度单独保留。</p><p>工作台元素与设置入口的显示开关位于 Wallpaper Engine 的壁纸属性中。全部关闭后只显示文章阵列；需要恢复时从那里重新打开。隐藏专注内容不会停止计时。</p></div>`;
   }
   private syncElements() {
     const selectors = { clock: ".wb-time", tasks: ".wb-today", module: ".wb-module", navigation: ".wb-nav" } as const;

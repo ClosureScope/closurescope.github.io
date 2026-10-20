@@ -109,8 +109,8 @@ export class ModelViewer {
       <div class="viewer-canvas"></div>
       <div class="scene-atmosphere viewer-atmosphere" aria-hidden="true"></div>
       <header class="viewer-header">
-        <button class="viewer-back" data-viewer="close">← <span>返回档案</span><kbd>ESC</kbd></button>
-        <div class="viewer-heading"><span>RHINE LAB / OBJECT STUDY</span><h2 id="viewer-title">档案模型</h2><p id="viewer-file"></p></div>
+        <button class="viewer-back" data-viewer="close">← <span>返回文章</span><kbd>ESC</kbd></button>
+        <div class="viewer-heading"><span>RHINE LAB / OBJECT STUDY</span><h2 id="viewer-title">文章模型</h2><p id="viewer-file"></p></div>
         <span class="viewer-index">360<span>°</span></span>
       </header>
       <div class="viewer-surface" role="group" aria-label="玻璃模式"><button data-viewer="clear" aria-pressed="true">清晰</button><button data-viewer="frosted" aria-pressed="false">磨砂</button></div>
@@ -118,7 +118,7 @@ export class ModelViewer {
       <div class="viewer-loading" role="status"><span>正在载入模型…</span><button data-viewer="retry" hidden>重新载入 ↗</button></div>
       <footer class="viewer-footer">
         <div class="viewer-help"><span>拖动旋转</span><span>↑ ↓ ← → 平移</span><span>滚轮缩放</span></div>
-        <div class="viewer-actions"><button data-viewer="explode" aria-pressed="false"><span>＋</span> 拆解档案</button><button data-viewer="assemble" aria-pressed="true"><span>−</span> 一键重组</button></div>
+        <div class="viewer-actions"><button data-viewer="explode" aria-pressed="false"><span>＋</span> 拆解文章</button><button data-viewer="assemble" aria-pressed="true"><span>−</span> 一键重组</button></div>
         <button class="viewer-reset" data-viewer="reset">复位视角 <span>↗</span></button>
       </footer>
       <div class="viewer-state" aria-live="polite">已组装</div>`;
@@ -134,7 +134,7 @@ export class ModelViewer {
     this.renderer.domElement.tabIndex = 0;
     this.renderer.domElement.setAttribute(
       "aria-label",
-      "档案三维模型：拖动旋转，方向键平移，滚轮或加减键缩放，Home 复位",
+      "文章三维模型：拖动旋转，方向键平移，滚轮或加减键缩放，Home 复位",
     );
     this.canvasHost.appendChild(this.renderer.domElement);
     this.scene.background = new THREE.Color("#eae5e1");

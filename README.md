@@ -1,6 +1,6 @@
 # ClosureScope 博客
 
-首页使用 RhineLabUI 三维档案界面，自动从 `posts/<分类>/*.typ` 生成栏目和文章。写作方法及正文渲染保持原样；界面接入、动态更新与验证说明见 [RhineLabUI 博客界面](docs/rhine-ui.md)。
+首页使用 RhineLabUI 三维文章界面，自动从 `posts/<分类>/*.typ` 生成栏目和文章。写作方法及正文渲染保持原样；界面接入、动态更新与验证说明见 [RhineLabUI 博客界面](docs/rhine-ui.md)。
 
 文章全部写在 `.typ` 中，使用 Typst 原生数学语法、标题、代码块和图片。文章统一引用你提供的 `typst/template.typ`，保留 `frame-it`、`tablem`、`definition` 等命令。Astro 只负责网站外壳；不使用 Markdown/MDX、LaTeX、KaTeX 或 MathJax。
 

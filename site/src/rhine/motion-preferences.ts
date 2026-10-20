@@ -26,43 +26,43 @@ export const MOTION_LABELS: Record<
 > = {
   selectionWave: {
     title: "SELECTION WAVE",
-    description: "选档时向阵列传播的波浪",
-    group: "档案阵列",
+    description: "选择文章时向阵列传播的波浪",
+    group: "文章阵列",
   },
   idleWave: {
     title: "IDLE MOTION",
     description: "停止操作后的阵列起伏",
-    group: "档案阵列",
+    group: "文章阵列",
   },
   pointerParallax: {
     title: "POINTER PARALLAX",
     description: "镜头随指针的轻微偏移",
-    group: "档案阵列",
+    group: "文章阵列",
   },
   dragMomentum: {
     title: "DRAG MOMENTUM",
     description: "松手后按实际速度继续滑行",
-    group: "档案阵列",
+    group: "文章阵列",
   },
   selectionTransition: {
     title: "SELECTION TRANSITION",
-    description: "切列、切档时的轨道移动",
-    group: "档案阵列",
+    description: "切换栏目、文章时的轨道移动",
+    group: "文章阵列",
   },
   detailTransition: {
     title: "DETAIL TRANSITION",
     description: "抽取、转正、归位与详情镜头",
-    group: "档案详情",
+    group: "文章详情",
   },
   modelDecryption: {
     title: "MODEL DECRYPTION",
     description: "模型解密线与磨砂揭示",
-    group: "档案详情",
+    group: "文章详情",
   },
   documentReveal: {
     title: "DOCUMENT REVEAL",
     description: "正文的遮罩揭示",
-    group: "档案详情",
+    group: "文章详情",
   },
   rollingText: {
     title: "ROLLING TEXT",
@@ -71,7 +71,7 @@ export const MOTION_LABELS: Record<
   },
   rollingNumbers: {
     title: "ROLLING NUMBERS",
-    description: "序号、列编号与档案编码滚动",
+    description: "栏目编号与时钟滚动",
     group: "界面",
   },
   surfaceTransitions: {

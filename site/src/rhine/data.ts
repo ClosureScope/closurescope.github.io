@@ -14,7 +14,7 @@ export interface ArchiveRecord {
 const content = createArchiveIndex(JSON.parse(document.querySelector('#blog-index')!.textContent!));
 export const records: ArchiveRecord[] = content.records;
 export const archiveColumns: string[] = content.columns;
-export const categories = ['全部档案', ...archiveColumns];
+export const categories = ['全部文章', ...archiveColumns];
 
 // Identity is independent of the rendering pool and its fixed capacity.
 let rowOrigin = 0;
