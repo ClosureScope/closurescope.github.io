@@ -1,7 +1,6 @@
 import {
   matchingPreset,
   presetLabels,
-  type QualityPreset,
   type RenderQuality,
 } from "./render-quality";
 import { isWallpaper } from "./wallpaper";
@@ -29,8 +28,7 @@ if (isWallpaper) document.addEventListener("click", event => {
 export function qualityMarkup(quality: RenderQuality) {
   const preset = matchingPreset(quality);
   return `<section class="quality-settings" aria-label="画质设置">
-    <div class="quality-heading"><h3>RENDER QUALITY <span>渲染画质</span></h3>${choiceControl('id="quality-preset"', "画质预设", preset, (Object.keys(presetLabels) as QualityPreset[]).map(key => [key, presetLabels[key]]))}</div>
-    <p class="quality-summary" id="quality-summary" aria-live="polite"></p>
+    <div class="quality-heading"><h3>RENDER QUALITY <span>渲染画质</span></h3>${choiceControl('id="quality-preset"', "画质预设", preset, (["original", "performance"] as const).map(key => [key, presetLabels[key]]))}</div>
     <p class="quality-note">${isWallpaper ? "即时生效，仅限当前运行；长期设置请在 Wallpaper Engine 中调整。" : "即时生效并自动保存。"}</p>
   </section>`;
 }

@@ -8,6 +8,8 @@ import {
   qualityPresets,
   type RenderQuality,
 } from "./render-quality";
+import { qualityMarkup, syncQualityUI } from "./quality-settings";
+import "./quality-settings.css";
 import { superPerformanceQuality, wallpaperQuality } from "./wallpaper-quality";
 import "@kitlangton/rolling-number/styles.css";
 import "./style.css";
@@ -113,6 +115,7 @@ const storedPrefs = readLocal<
     reduced: boolean;
     quality: boolean;
     rendering: RenderQuality;
+    renderPreset: "original" | "performance";
     superPerformance: boolean;
     colorTheme: "light" | "dark";
     motion: StoredMotion;
@@ -127,6 +130,7 @@ const initialMotion = createMotionPreferences(
       : undefined),
 );
 const initialMotionPreset = motionPresetFor(initialMotion);
+const initialRenderPreset = storedPrefs.renderPreset === "performance" ? "performance" : "original";
 const prefs = {
   sound: storedPrefs.sound ?? true,
   music: storedPrefs.music ?? storedPrefs.sound ?? true,
@@ -136,7 +140,8 @@ const prefs = {
   motionPreset: initialMotionPreset,
   quality: storedPrefs.quality ?? true,
   superPerformance: false,
-  rendering: { ...qualityPresets.original },
+  renderPreset: initialRenderPreset as "original" | "performance",
+  rendering: { ...qualityPresets[initialRenderPreset] },
   colorTheme: storedPrefs.colorTheme === "dark" ? "dark" : "light",
 };
 const motionActive = (key: MotionKey) => motionEnabled(prefs.motion, key);
@@ -229,6 +234,7 @@ function savePrefs() {
     );
   scene?.setSuperPerformance(superPerformanceEnabled());
   scene?.setQuality(effectiveRenderQuality());
+  syncQualityUI(prefs.rendering);
   rollingTitles.forEach((title) =>
     title.update({
       animated: motionActive("rollingText") && mode === "archive",
@@ -504,7 +510,7 @@ function renderResults() {
     `${String(results.length).padStart(2, "0")} RECORDS FOUND`;
 }
 function settingsMarkup() {
-  return `<h2>SETTINGS<small>设置</small></h2><div class="settings-list">${audioSettingsMarkup(prefs)}</div><div class="settings-bottom">${!isWallpaper && document.fullscreenEnabled ? '<button data-action="fullscreen">FULLSCREEN / 全屏 <span>↗</span></button>' : ""}</div>`;
+  return `<h2>SETTINGS<small>设置</small></h2><div class="settings-list">${audioSettingsMarkup(prefs)}</div>${qualityMarkup(prefs.rendering)}<div class="settings-bottom">${!isWallpaper && document.fullscreenEnabled ? '<button data-action="fullscreen">FULLSCREEN / 全屏 <span>↗</span></button>' : ""}</div>`;
 }
 
 document.addEventListener("input", (e) => {
@@ -527,6 +533,12 @@ document.addEventListener("input", (e) => {
 });
 document.addEventListener("change", (e) => {
   const el = e.target as HTMLInputElement;
+  if (el.id === "quality-preset" && (el.value === "original" || el.value === "performance")) {
+    prefs.renderPreset = el.value;
+    prefs.rendering = { ...qualityPresets[el.value] };
+    savePrefs();
+    return;
+  }
   if (el.dataset.pref) {
     const key = el.dataset.pref;
     if (key !== "sound" && key !== "music") return;
