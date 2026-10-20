@@ -304,32 +304,9 @@ button {
 .read-file:hover > span {
   transform: translateX(9px);
 }
-.archive-counter {
-  position: absolute;
-  bottom: 115px;
-  left: 60px;
-}
 .tiny-label {
   font-size: 11px;
   letter-spacing: 1.7px;
-}
-.archive-counter > div {
-  font-size: 58px;
-  line-height: 1.1;
-  margin-top: 16px;
-  display: flex;
-  gap: 21px;
-  align-items: baseline;
-}
-.archive-counter i {
-  font-style: normal;
-  font-weight: 300;
-  font-size: 32px;
-  color: #8f8a80;
-}
-.count-total {
-  font-size: 22px;
-  color: #726f67;
 }
 .archive-navigation {
   position: absolute;
@@ -555,17 +532,6 @@ button {
   opacity: 0;
   outline: none !important;
 }
-.detail-kicker {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 11px;
-  letter-spacing: 1.4px;
-}
-.detail-kicker span:last-child {
-  font-size: 9px;
-  color: #77756b;
-}
 .detail-content h2 {
   font-size: 40px;
   line-height: 1.12;
@@ -704,28 +670,6 @@ button {
   margin-top: 19px;
   align-items: center;
   gap: 30px;
-}
-.solid-button {
-  background: #252820;
-  color: #f0eee5;
-  height: 46px;
-  flex: 1;
-  font-size: 11px;
-  letter-spacing: 1px;
-  text-align: left;
-  padding: 0 18px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  transition: background 0.2s;
-}
-.solid-button > span {
-  font-size: 11px;
-  color: #bcbfb1;
-  letter-spacing: 0;
-}
-.solid-button:hover {
-  background: #4b4a3b;
 }
 .export-button {
   font-size: 11px;
@@ -979,11 +923,6 @@ button {
   min-width: 0;
   padding-right: 24px;
 }
-.result-name > b {
-  font-size: 14px;
-  flex: 0 0 58px;
-  font-weight: 400;
-}
 .result-name > span {
   display: block;
   min-width: 0;
@@ -995,11 +934,6 @@ button {
   letter-spacing: 0.7px;
   color: #9b907e;
   margin-top: 7px;
-}
-.result-name > i {
-  color: #ad9170;
-  font-size: 13px;
-  font-style: normal;
 }
 .result-row > span:nth-child(2) {
   font-size: 12px;

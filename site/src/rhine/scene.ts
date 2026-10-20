@@ -20,7 +20,7 @@ import { applyTextureQuality, resizeQuality } from "./quality-renderer";
 import { CardAppearance } from "./appearance";
 import { configureInternalOptics } from "./internal-optics";
 import { DecryptionController } from "./decryption";
-import { fileAtSlot, fileLocation, sceneLocation, archiveColumns, rebaseArchiveRows, resetArchiveRows } from "./data";
+import { records, fileAtSlot, fileLocation, sceneLocation, archiveColumns, rebaseArchiveRows, resetArchiveRows } from "./data";
 import {
   cellKey,
   sameCell,
@@ -790,13 +790,36 @@ export class ArchiveScene {
     c.fillRect(12, 12, 1000, 6);
     c.fillRect(12, 419, 1000, 3);
     c.font = "bold 81px MiSans";
-    c.fillText("RHINE LAB, LLC.", 22, 116);
+    c.fillText("ClosureScope", 22, 116);
     c.font = "32px MiSans";
     c.fillStyle = "#878476";
-    c.fillText("INTERNAL DATABASE", 25, 174);
+    c.fillText(records[index].category, 25, 174);
     c.fillStyle = "#171713";
-    c.font = "bold 130px MiSans";
-    c.fillText("NO." + String(index + 1).padStart(3, "0"), 22, 360);
+    // Fit the article title inside the label, including titles without spaces.
+    c.save();
+    c.beginPath();
+    c.rect(22, 200, 730, 210);
+    c.clip();
+    c.font = "bold 48px MiSans";
+    const lines: string[] = [];
+    let line = "";
+    for (const character of records[index].title) {
+      if (line && c.measureText(line + character).width > 720) {
+        lines.push(line);
+        line = "";
+      }
+      line += character;
+    }
+    if (line) lines.push(line);
+    for (const [row, text] of lines.slice(0, 3).entries()) {
+      let visible = text;
+      if (row === 2 && lines.length > 3) {
+        while (c.measureText(visible + "…").width > 720) visible = visible.slice(0, -1);
+        visible += "…";
+      }
+      c.fillText(visible, 22, 260 + row * 64);
+    }
+    c.restore();
     c.fillRect(782, 32, 221, 39);
     c.fillStyle = "#eee9de";
     c.font = "24px MiSans";

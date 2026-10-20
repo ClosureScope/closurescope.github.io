@@ -64,7 +64,7 @@ import { paintTheme, themeSettingsMarkup } from "./theme-ui";
 let playground: ArchivePlayground | undefined;
 import { WallpaperEffects } from "./wallpaper-effects";
 import { WallpaperBackground } from "./wallpaper-background";
-import { enableGamepad, isGamepadEvent, onInputDevice } from "./gamepad";
+import { enableGamepad, onInputDevice } from "./gamepad";
 let wallpaperEffects: WallpaperEffects | undefined;
 
 const $ = <T extends HTMLElement = HTMLElement>(selector: string) =>
@@ -77,22 +77,20 @@ $("#stage").innerHTML = `
   <header class="brand">${brandHeading}</header>
   <nav class="system-nav" aria-label="系统导航">
     <button data-action="search"><span class="nav-glyph">⌕</span> ARCHIVE INDEX <span class="key">/</span></button>
-    <button data-action="saved" aria-label="查看收藏档案" title="收藏档案">＋ SAVED <span id="saved-count">00</span></button>
     <button class="settings-button" data-action="settings" aria-label="系统设置" title="系统设置"><span class="settings-glyph" aria-hidden="true">◷</span><span class="settings-label">设置</span></button>
   </nav>
   <svg id="inspection-marks" viewBox="0 0 1920 1080" aria-hidden="true"><path id="inspection-lines"/><g id="inspection-corners"></g><circle id="inspection-point" r="1.8"/></svg>
   <div id="inspection-text" aria-hidden="true">CONFIDENTIALITY:<strong>GENERAL BUSINESS USE</strong></div>
   <section id="archive-ui" class="archive-ui" aria-label="档案选择">
     <div class="archive-callout"><button class="file-title" data-action="open"><span id="selected-title">${escapeHtml(records[0].title)}</span><span class="file-open" aria-hidden="true">↗</span></button><div class="callout-rule"><i></i></div><button class="read-file" data-action="open">ACCESS FILE <span>→</span></button></div>
-    <div id="hover-label" class="hover-label" hidden>X-<span id="hover-code">001</span> / <span id="hover-title"></span></div>
-    <div class="archive-counter"><span class="tiny-label">ARCHIVE / SELECT</span><div><span id="selected-number">01</span><i>/</i><span class="count-total">${String(columnFiles(0).length).padStart(2, "0")}</span></div></div>
+    <div id="hover-label" class="hover-label" hidden><span id="hover-title"></span></div>
     <div class="archive-navigation"><button data-action="prev" aria-label="上一个档案">↑</button><div id="file-ticks" class="file-ticks"></div><button data-action="next" aria-label="下一个档案">↓</button></div>
     <div class="column-navigation"><button data-action="column-prev" aria-label="上一列">←</button><div><span id="column-number">COLUMN <span id="column-index">01</span> / <span id="column-total"></span></span><strong id="column-name">${escapeHtml(records[0].category)}</strong></div><button data-action="column-next" aria-label="下一列">→</button></div>
     <div class="archive-hint"><kbd>←</kbd> <kbd>→</kbd> 切换列 <span>／</span> <kbd>↑</kbd> <kbd>↓</kbd> 前后档案 <span>／</span> <kbd>ENTER</kbd> 读取</div>
   </section>
   <section id="detail-ui" class="detail-ui" aria-label="档案内容" hidden>
     <button class="back-button" data-action="back">← <span>ARCHIVE OVERVIEW</span><small>ESC</small></button>
-    <div class="object-caption"><span id="object-id">NO.001</span><div>INTERNAL DATABASE</div><small>DRAG TO INSPECT <span>↔</span></small><button class="viewer-open" data-action="model-viewer">360° 查看文档模型 <span>↗</span></button></div>
+    <div class="object-caption"><div>INTERNAL DATABASE</div><small>DRAG TO INSPECT <span>↔</span></small><button class="viewer-open" data-action="model-viewer">360° 查看文档模型 <span>↗</span></button></div>
     <article id="detail-content" class="detail-content"></article>
   </section>
   <footer class="system-footer">${isWallpaper ? '<button type="button" class="three-toggle" data-action="toggle-three" aria-pressed="true" title="卸载三维模型，保留 2D 界面">3D 开启</button>' : ""}<span class="footer-clock">ClosureScope <i>／</i> <span id="clock">00:00:00</span></span></footer>
@@ -105,7 +103,7 @@ $("#stage").dataset.mode = "archive";
 
 type Mode = "archive" | "detail";
 let mode: Mode = "archive", selected = 0, ready = false;
-let modal: "search" | "saved" | "settings" | null = null,
+let modal: "search" | "settings" | null = null,
   searchQuery = "",
   filter = "全部档案";
 let activeTab = "overview";
@@ -122,7 +120,6 @@ let modalTransition: SurfaceTransition | undefined;
 let modalClosing = false;
 let modalSiblings: { node: HTMLElement; inert: boolean }[] = [];
 let pendingDetailFocus = false;
-let bookmarkFeedback: Animation | undefined;
 function readLocal<T>(key: string, fallback: T): T {
   try {
     return JSON.parse(localStorage.getItem(key) ?? "null") ?? fallback;
@@ -130,7 +127,6 @@ function readLocal<T>(key: string, fallback: T): T {
     return fallback;
   }
 }
-const saved = new Set<string>(readLocal<string[]>("closurescope-saved", []).filter(id => records.some(record => record.id === id)));
 const storedPrefs = readLocal<
   Partial<{
     sound: boolean;
@@ -184,19 +180,10 @@ const numberOptions = {
   locales: "en-US",
   format: { minimumIntegerDigits: 2, useGrouping: false },
 };
-const fileCounter = createRollingNumber($("#selected-number"), {
-  ...numberOptions,
-  value: 1,
-});
 const columnCounter = createRollingNumber($("#column-index"), {
   ...numberOptions,
   value: 1,
 });
-const codeOptions = {
-  ...numberOptions,
-  format: { minimumIntegerDigits: 3, useGrouping: false },
-  value: 1,
-};
 const textOptions = {
   ...rollingMotion,
   animated: motionActive("rollingText"),
@@ -213,7 +200,6 @@ const hoverTitle = createRollingText($("#hover-title"), {
 });
 const rollingTitles = [columnTitle, hoverTitle];
 const titleTransition = new ContentTransition();
-const hoverCode = createRollingNumber($("#hover-code"), codeOptions);
 const audio = new TerminalAudio();
 let musicSuppressed = false;
 function configureAudio() {
@@ -258,14 +244,11 @@ function savePrefs() {
     titleTransition.finish();
   }
   if (!motionActive("rollingNumbers"))
-    [fileCounter, columnCounter, hoverCode].forEach((counter) =>
-      counter.finish(),
-    );
+    columnCounter.finish();
   if (!motionActive("surfaceTransitions")) {
     detailTransition.finish();
     modalTransition?.finish();
     tabTransition.finish();
-    bookmarkFeedback?.cancel();
   }
   scene?.setMotion(prefs.motion);
   scene?.setTheme(
@@ -287,18 +270,12 @@ function savePrefs() {
   viewer?.setMotion(prefs.motion);
   syncQualityUI(prefs.rendering);
   updateQualitySummary();
-  fileCounter.update({
-    animated: motionActive("rollingNumbers") && mode === "archive",
-  });
   rollingTitles.forEach((title) =>
     title.update({
       animated: motionActive("rollingText") && mode === "archive",
     }),
   );
   columnCounter.update({
-    animated: motionActive("rollingNumbers") && mode === "archive",
-  });
-  hoverCode.update({
     animated: motionActive("rollingNumbers") && mode === "archive",
   });
   $("#stage").classList.toggle("reduce-motion", motionIsReduced());
@@ -379,7 +356,6 @@ function setMode(next: Mode) {
   }));
   if (next !== "archive") {
     rollingTitles.forEach(title => title.finish());
-    hoverCode.finish();
     $("#hover-label").hidden = true;
   }
   if (next === "detail" && previousMode !== "detail") recordAccess();
@@ -453,15 +429,6 @@ function updateSelection(navigation?: ArchiveNavigation) {
   const direction = navigation && "axis" in navigation
     ? navigation.direction > 0 ? "up" : "down"
     : "auto";
-  fileCounter.update({
-    value: files.indexOf(selected) + 1,
-    animated: motionActive("rollingNumbers") && mode === "archive",
-    direction:
-      navigation && "axis" in navigation && navigation.axis === "row"
-        ? direction
-        : "auto",
-  });
-  $(".count-total").textContent = String(files.length).padStart(2, "0");
   columnCounter.update({
     value: lane + 1,
     animated: motionActive("rollingNumbers") && mode === "archive",
@@ -497,7 +464,6 @@ function updateSelection(navigation?: ArchiveNavigation) {
         ticks.scrollLeft = button.offsetLeft + button.offsetWidth - ticks.clientWidth;
     }
   });
-  $("#saved-count").textContent = String(saved.size).padStart(2, "0");
 }
 function openFile() {
   if (!ready) return;
@@ -506,49 +472,19 @@ function openFile() {
     audio.play("open");
   });
 }
-function toggleSaved() {
-  const id = records[selected].id;
-  if (saved.has(id)) saved.delete(id);
-  else saved.add(id);
-  try {
-    localStorage.setItem("closurescope-saved", JSON.stringify([...saved]));
-  } catch {}
-  $("#saved-count").textContent = String(saved.size).padStart(2, "0");
-  const button = $<HTMLButtonElement>('[data-action="bookmark"]');
-  const added = saved.has(id);
-  button.firstChild!.textContent = added
-    ? "− REMOVE FROM SAVED"
-    : "＋ SAVE ARCHIVE";
-  button.querySelector("span")!.textContent = added ? "已收藏" : "收藏档案";
-  button.setAttribute("aria-pressed", String(added));
-  bookmarkFeedback?.cancel();
-  if (motionActive("surfaceTransitions"))
-    bookmarkFeedback = button.animate(
-      [{ backgroundColor: "#67634c" }, { backgroundColor: "#252820" }],
-      { duration: 220, easing: "ease-out" },
-    );
-  audio.play("confirm");
-  notify(saved.has(id) ? "档案已加入收藏" : "已取消收藏");
-}
 function renderDetail() {
   tabTransition.cancel();
   const r = records[selected];
-  $("#object-id").textContent = "NO." + String(selected + 1).padStart(3, "0");
   $("#detail-content").innerHTML = `
-  <div class="detail-kicker"><span>FILE X-${String(r.code).padStart(3, "0")}</span></div>
   <h2>${escapeHtml(r.title)}</h2><div class="detail-title-cn">${escapeHtml(r.category)}<span>ClosureScope</span></div>
   <div class="detail-rule"></div>
   <dl class="metadata"><div><dt>CATEGORY / 分类</dt><dd>${escapeHtml(r.category)}</dd></div><div><dt>FORMAT / 正文格式</dt><dd>Typst · HTML / SVG</dd></div></dl>
   <div class="detail-tabs" role="tablist"><button id="tab-overview" class="active" role="tab" aria-controls="tab-panel" aria-selected="true" data-tab="overview">01 <span>正文</span></button><button id="tab-notes" role="tab" aria-controls="tab-panel" aria-selected="false" data-tab="notes">02 <span>文章信息</span></button><button id="tab-history" role="tab" aria-controls="tab-panel" aria-selected="false" data-tab="history">03 <span>访问日志</span></button><i class="tab-indicator" aria-hidden="true"></i></div>
   <div id="tab-panel" class="tab-panel" role="tabpanel">${overview()}</div>
-  <div class="detail-actions"><button class="solid-button" data-action="bookmark">${saved.has(r.id) ? "− REMOVE FROM SAVED" : "＋ SAVE ARCHIVE"}<span>${saved.has(r.id) ? "已收藏" : "收藏文章"}</span></button><a class="export-button" href="${escapeHtml(r.source)}" target="_top" aria-label="独立阅读 ${escapeHtml(r.title)}">READ <span>↗</span></a></div>
-  <div class="detail-footnote"><a href="${escapeHtml(r.source)}" target="_top">独立阅读 ↗</a><span>${String(selected + 1).padStart(3, "0")} / ${String(records.length).padStart(3, "0")}</span></div>`;
+  <div class="detail-actions"><a class="export-button" href="${escapeHtml(r.source)}" target="_top" aria-label="独立阅读 ${escapeHtml(r.title)}">READ <span>↗</span></a></div>
+  <div class="detail-footnote"><a href="${escapeHtml(r.source)}" target="_top">独立阅读 ↗</a></div>`;
   blogReader.open(r.source, r.title);
   $("#detail-content").setAttribute("tabindex", "-1");
-  $('[data-action="bookmark"]').setAttribute(
-    "aria-pressed",
-    String(saved.has(r.id)),
-  );
   documentDecryption.reset(
     $("#detail-content"),
     !motionActive("documentReveal") ||
@@ -649,7 +585,7 @@ function renderModal() {
   if (!modal) return;
   modalTransition?.dispose();
   $("#modal-root").innerHTML =
-    `<div class="modal-backdrop"><section class="terminal-modal ${modal === "settings" ? "settings-modal" : ""}" role="dialog" aria-modal="true" aria-label="${modal === "settings" ? "系统设置" : modal === "saved" ? "收藏档案" : "档案检索"}"><div class="modal-top"><span>ClosureScope / ${modal === "settings" ? "SYSTEM PREFERENCES" : "ARCHIVE DIRECTORY"}</span><button data-action="close-modal" aria-label="关闭窗口">CLOSE <span>×</span></button></div>${modal === "settings" ? settingsMarkup() : `<h2>${modal === "saved" ? "SAVED ARCHIVES" : "ARCHIVE INDEX"}<small>${modal === "saved" ? "收藏档案" : "内部档案检索"}</small></h2><div class="search-field"><span>⌕</span><input id="archive-search" type="search" autocomplete="off" placeholder="输入文章标题、文件名或分类" aria-label="检索档案"/><span class="key">ESC</span></div><div class="category-filters">${categories.map((c, i) => `<button data-filter="${escapeHtml(c)}" class="${i === 0 ? "active" : ""}">${escapeHtml(c)}</button>`).join("")}</div><div class="result-header"><span>FILE / 档案</span><span>CATEGORY / 分类</span><span>ACCESS</span></div><div id="search-results" class="search-results"></div><div class="modal-bottom"><span id="result-count"></span><span>INTERNAL DATABASE <i>●</i> CONNECTED</span></div>`}</section></div>`;
+    `<div class="modal-backdrop"><section class="terminal-modal ${modal === "settings" ? "settings-modal" : ""}" role="dialog" aria-modal="true" aria-label="${modal === "settings" ? "系统设置" : "档案检索"}"><div class="modal-top"><span>ClosureScope / ${modal === "settings" ? "SYSTEM PREFERENCES" : "ARCHIVE DIRECTORY"}</span><button data-action="close-modal" aria-label="关闭窗口">CLOSE <span>×</span></button></div>${modal === "settings" ? settingsMarkup() : `<h2>ARCHIVE INDEX<small>文章检索</small></h2><div class="search-field"><span>⌕</span><input id="archive-search" type="search" autocomplete="off" placeholder="输入文章标题、文件名或分类" aria-label="检索档案"/><span class="key">ESC</span></div><div class="category-filters">${categories.map((c, i) => `<button data-filter="${escapeHtml(c)}" class="${i === 0 ? "active" : ""}">${escapeHtml(c)}</button>`).join("")}</div><div class="result-header"><span>FILE / 档案</span><span>CATEGORY / 分类</span><span>ACCESS</span></div><div id="search-results" class="search-results"></div><div class="modal-bottom"><span id="result-count"></span><span>INTERNAL DATABASE <i>●</i> CONNECTED</span></div>`}</section></div>`;
   const backdrop = $(".modal-backdrop");
   backdrop.hidden = true;
   modalTransition = new SurfaceTransition(backdrop, $(".terminal-modal"));
@@ -676,7 +612,6 @@ function renderResults() {
     .map((r, i) => ({ r, i }))
     .filter(
       ({ r }) =>
-        (modal !== "saved" || saved.has(r.id)) &&
         (filter === "全部档案" || r.category === filter) &&
         `${r.id} ${r.title} ${r.category}`
           .toLowerCase()
@@ -686,10 +621,10 @@ function renderResults() {
     ? results
         .map(
           ({ r, i }) =>
-            `<button class="result-row" data-result="${i}"><span class="result-name"><b>X-${String(r.code).padStart(3, "0")}</b><span>${escapeHtml(r.title)}<small>${escapeHtml(r.category)}</small></span>${saved.has(r.id) ? "<i>＋</i>" : ""}</span><span>${escapeHtml(r.department)}</span><span>${r.clearance === "RESTRICTED" ? "CATALOG ONLY" : "AUTHORIZED"} <i>↗</i></span></button>`,
+            `<button class="result-row" data-result="${i}"><span class="result-name"><span>${escapeHtml(r.title)}<small>${escapeHtml(r.category)}</small></span></span><span>${escapeHtml(r.department)}</span><span>${r.clearance === "RESTRICTED" ? "CATALOG ONLY" : "AUTHORIZED"} <i>↗</i></span></button>`,
         )
         .join("")
-    : `<div class="empty-results"><span>∅</span><strong>${modal === "saved" && !searchQuery ? "尚无收藏档案" : "没有匹配的档案"}</strong><p>${modal === "saved" && !searchQuery ? "读取档案时，选择 SAVE ARCHIVE 将其保存在此处。" : "尝试其他名称、档案编号，或切换科室分类。"}</p><button data-action="reset-search">${modal === "saved" ? "查看全部档案 →" : "重置检索 →"}</button></div>`;
+    : `<div class="empty-results"><span>∅</span><strong>没有匹配的文章</strong><p>尝试其他文章标题、文件名，或切换分类。</p><button data-action="reset-search">重置检索 →</button></div>`;
   $("#result-count").textContent =
     `${String(results.length).padStart(2, "0")} RECORDS FOUND`;
 }
@@ -885,7 +820,6 @@ document.addEventListener("click", (e) => {
     viewer.setMotion(prefs.motion);
     scene.finishDecryption();
     viewer.open(
-      records[selected].id,
       records[selected].title,
       () => activeScene.createAssemblyModel(),
       !motionActive("viewerNavigation"),
@@ -896,12 +830,11 @@ document.addEventListener("click", (e) => {
     setMode("archive");
     audio.play("back");
   }
-  if (action === "search" || action === "saved" || action === "settings") {
+  if (action === "search" || action === "settings") {
     el.focus({ preventScroll: true });
     openModal(action);
   }
   if (action === "close-modal") closeModal();
-  if (action === "bookmark") toggleSaved();
   if (action === "reset-search") {
     modal = "search";
     searchQuery = "";
@@ -995,10 +928,6 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "/") {
     e.preventDefault();
     openModal("search");
-  }
-  if (e.key === "Home" && isGamepadEvent(e) && mode === "archive" && !modal) {
-    e.preventDefault();
-    openModal("saved");
   }
   if (e.key === "ArrowLeft") {
     e.preventDefault();
@@ -1130,24 +1059,16 @@ function bindScene(scene: ArchiveScene, cell?: { lane: number; row: number }) {
     const label = $("#hover-label");
     if (i === null) {
       label.hidden = true;
-      hoverCode.finish();
       hoverTitle.finish();
       return;
     }
     const animated = motionActive("rollingText") && mode === "archive";
-    const numbersAnimated =
-      motionActive("rollingNumbers") && mode === "archive";
-    hoverCode.update({
-      value: records[i].code,
-      animated: !label.hidden && numbersAnimated,
-    });
     hoverTitle.update({
       text: records[i].title,
       animated: !label.hidden && animated,
     });
     label.hidden = false;
     // Prepare the first visible value so the next hover can animate immediately.
-    hoverCode.update({ animated: numbersAnimated });
     hoverTitle.update({ animated });
   };
 }
@@ -1250,7 +1171,7 @@ async function start() {
     await Promise.all([
       scene.load(),
       document.fonts.load("400 20px MiSans", records[0].title + records[0].category),
-      document.fonts.load("700 20px MiSans", "RHINE LAB NO.0123456789"),
+      document.fonts.load("700 20px MiSans", "ClosureScope"),
     ]);
     bindScene(scene);
     savePrefs();
@@ -1421,7 +1342,6 @@ Object.assign(window, {
       startup: started ? "started" : "loading",
       motion: { reduced: motionIsReduced(), preset: prefs.motionPreset },
       selected: records[selected].id,
-      saved: [...saved],
       audio: audio.stats(),
       wallpaper: isWallpaper ? wallpaperHost() : null,
     }),

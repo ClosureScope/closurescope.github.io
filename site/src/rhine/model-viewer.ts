@@ -224,7 +224,6 @@ export class ModelViewer {
   }
 
   open(
-    id: string,
     title: string,
     provider: () => Promise<ModelSource>,
     reduced: boolean,
@@ -246,7 +245,7 @@ export class ModelViewer {
     this.root.dataset.transition = "opening";
     this.root.querySelector("#viewer-title")!.textContent = title;
     this.root.querySelector("#viewer-file")!.textContent =
-      "FILE " + id + " / INTERNAL DATABASE";
+      "ClosureScope";
     this.spread = { value: 0, velocity: 0 };
     this.targetSpread = 0;
     this.clarity = { value: 1, velocity: 0 };

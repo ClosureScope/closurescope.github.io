@@ -12,7 +12,7 @@
 [data-dark-surface="true"] :is(.terminal-modal, .viewer-loading, .toast) { background: var(--theme-panel); color: var(--theme-ink); box-shadow: 0 26px 95px #0003; border-color: var(--theme-line); }
 [data-dark-surface="true"] .modal-backdrop { background: rgba(var(--theme-paper-rgb), .6); }
 [data-dark-surface="true"] :is(.wallpaper-settings-note, .quality-cycle, .wb-cover, .relay-actions button, .relay-target) { background: var(--theme-field); color: var(--theme-ink); border-color: var(--theme-line); }
-[data-dark-surface="true"] :is(.wb-muted, .wb-media small, .wb-timer-label, .wb-nav button, .wb-task[aria-pressed="true"], .theme-settings span, .settings-intro, .settings-list label span, .audio-setting span, .settings-shortcuts, .modal-bottom, .detail-kicker, .detail-content p, .detail-content li, .detail-tabs button, .file-summary, .archive-hint, .viewer-help, .viewer-heading p, .viewer-state, .object-caption small, .result-row small) { color: var(--theme-muted); }
+[data-dark-surface="true"] :is(.wb-muted, .wb-media small, .wb-timer-label, .wb-nav button, .wb-task[aria-pressed="true"], .theme-settings span, .settings-intro, .settings-list label span, .audio-setting span, .settings-shortcuts, .modal-bottom, .detail-content p, .detail-content li, .detail-tabs button, .file-summary, .archive-hint, .viewer-help, .viewer-heading p, .viewer-state, .object-caption small, .result-row small) { color: var(--theme-muted); }
 [data-dark-surface="true"] :is(.wb-nav button[aria-pressed="true"], .detail-tabs button.active, .settings-list strong, .detail-content h2, .detail-content h3, .detail-content strong, .result-row, .quality-heading h3, .quality-label) { color: var(--theme-ink); }
 [data-dark-surface="true"] :is(.wb-storage, a, .workbench button:hover, .relay-entry:hover) { color: var(--theme-accent); }
 [data-dark-surface="true"] :is(.wb-kicker, .wb-today, .wb-title, .wb-task, .wb-check, .wb-timer-buttons button, .wb-settings, .wb-settings button, .theme-settings, .theme-choices button, .modal-top, .settings-list label, .settings-bottom, .settings-shortcuts, .detail-tabs, .result-header, .result-row, .quality-grid, .quality-heading, .quality-range, .viewer-parts p, .viewer-footer, .viewer-surface button, .relay-entry, .relay-actions button, .category-filters button) { border-color: var(--theme-line); }
@@ -35,18 +35,17 @@
 [data-dark-surface="true"] .relay-target:hover { background: var(--theme-ink); color: var(--theme-paper); }
 [data-dark-surface="true"] .relay-target { box-shadow: 0 0 0 5px rgba(var(--theme-paper-rgb), .35); }
 [data-dark-surface="true"] :is(#inspection-marks, .inspection-overlay) { color: var(--theme-ink); }
-[data-dark-surface="true"] :is(.back-button, .viewer-back, .viewer-reset, .viewer-index, .viewer-parts, .file-title, .file-open, .read-file, .column-navigation, .archive-counter) { color: var(--theme-ink); }
+[data-dark-surface="true"] :is(.back-button, .viewer-back, .viewer-reset, .viewer-index, .viewer-parts, .file-title, .file-open, .read-file, .column-navigation) { color: var(--theme-ink); }
 @media(max-width: 700px) { .theme-settings { align-items: flex-start; }.theme-choices button { min-width: 58px; } }
 [data-dark-surface="true"] .archive-atmosphere { background: none; }
 [data-dark-surface="true"] .archive-atmosphere::before { background: linear-gradient(180deg, rgba(var(--theme-paper-rgb), .35), transparent 38%), radial-gradient(ellipse at 42% 47%, transparent 32%, rgba(var(--theme-paper-rgb), .19) 85%); }
 [data-dark-surface="true"] .archive-atmosphere::after { background: linear-gradient(90deg, transparent 40%, rgba(var(--theme-paper-rgb), .2) 59%, rgba(var(--theme-paper-rgb), .92) 68%, var(--theme-paper) 100%); }
 [data-dark-surface="true"] [data-layout="portrait"] .archive-atmosphere::after { background: linear-gradient(180deg, transparent 28%, rgba(var(--theme-paper-rgb), .2) 39%, rgba(var(--theme-paper-rgb), .96) 51%, var(--theme-paper) 60%); }
 [data-dark-surface="true"] [data-layout="portrait"] .archive-atmosphere::before { background: linear-gradient(180deg, rgba(var(--theme-paper-rgb), .35), transparent 25%, transparent 46%, rgba(var(--theme-paper-rgb), .8) 65%, var(--theme-paper) 82%); }
-[data-dark-surface="true"] :is(.wb-settings p, .terminal-modal h2 small, .motion-preference-note, .quality-summary, .quality-note, .quality-heading h3 span, .quality-advanced summary span, .quality-control small, .detail-kicker span, .detail-title-cn > span, .metadata dt, .panel-label, .detail-footnote, .viewer-heading > span, .viewer-parts > div, .viewer-parts small, .viewer-back kbd, .empty-results > p) { color: var(--theme-muted); }
+[data-dark-surface="true"] :is(.wb-settings p, .terminal-modal h2 small, .motion-preference-note, .quality-summary, .quality-note, .quality-heading h3 span, .quality-advanced summary span, .quality-control small, .detail-title-cn > span, .metadata dt, .panel-label, .detail-footnote, .viewer-heading > span, .viewer-parts > div, .viewer-parts small, .viewer-back kbd, .empty-results > p) { color: var(--theme-muted); }
 [data-dark-surface="true"] :is(.viewer-actions, .quality-settings select) { background: var(--theme-panel); color: var(--theme-ink); border-color: var(--theme-line); }
 [data-dark-surface="true"] .viewer-actions button:hover { background: var(--theme-field); color: var(--theme-ink); }
-[data-dark-surface="true"] :is(.detail-rule, .solid-button) { background: var(--theme-ink); color: var(--theme-paper); }
-[data-dark-surface="true"] .solid-button > span { color: inherit; }
+[data-dark-surface="true"] .detail-rule { background: var(--theme-ink); color: var(--theme-paper); }
 [data-dark-surface="true"] :is(.audio-volume input, .quality-range input) { accent-color: var(--theme-accent); }
 [data-dark-surface="true"] .viewer-surface button { color: var(--theme-muted); }
 [data-dark-surface="true"] .viewer-surface button[aria-pressed="true"] { color: var(--theme-paper); }

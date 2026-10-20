@@ -2,7 +2,6 @@ import { createArchiveIndex } from '../../../scripts/archive-index.mjs';
 
 export interface ArchiveRecord {
   id: string;
-  code: number;
   slug: string;
   title: string;
   en: string;

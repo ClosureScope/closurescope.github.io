@@ -76,7 +76,7 @@ export const MOTION_LABELS: Record<
   },
   surfaceTransitions: {
     title: "SURFACE TRANSITIONS",
-    description: "详情、检索、收藏与设置窗口过渡",
+    description: "详情、检索与设置窗口过渡",
     group: "界面",
   },
   viewerNavigation: {

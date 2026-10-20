@@ -17,7 +17,7 @@ export function createArchiveIndex(posts) {
     locations.push({ lane, row: 12 + files[lane].length, slot: index });
     files[lane].push(index);
     records.push({
-      id: post.slug, code: index + 1, slug: post.slug,
+      id: post.slug, slug: post.slug,
       title: post.title, en: post.title,
       department: post.category, category: post.category,
       clearance: 'PUBLIC ARCHIVE', source: `/posts/${post.slug}/`,
