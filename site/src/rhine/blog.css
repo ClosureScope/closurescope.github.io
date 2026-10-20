@@ -20,6 +20,10 @@
 @media (min-width: 1100px) and (min-aspect-ratio: 21/20) {
   .reading-view { top: max(140px, 18vh); }
 }
+/* Keep the original horizontal anchors and halve the header's top inset. */
+#stage[data-layout="desktop"] .brand { top: 57px; }
+#stage[data-layout="desktop"] .system-nav { top: 62px; }
+#stage:is([data-layout="compact"], [data-layout="portrait"]) :is(.brand, .system-nav) { top: max(8px, env(safe-area-inset-top)); }
 .brand h1 { letter-spacing: -.025em; }
 .archive-callout .file-title { width: 100%; align-items: flex-start; text-align: left; white-space: normal; line-height: 1.25; }
 .archive-callout #selected-title { flex: 1 1 auto; min-width: 0; white-space: normal; overflow-wrap: anywhere; }
