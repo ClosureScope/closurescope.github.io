@@ -4,13 +4,13 @@
 .reading-view { position: fixed; top: 96px; bottom: 30px; left: 0; right: 0; width: min(1040px, calc(100% - 48px)); margin-inline: auto; z-index: 10; display: flex; flex-direction: column; background: transparent; color: #171713; isolation: isolate; }
 /* Keep the complete scene and its decryption marks below the glass and prose. */
 #viewport { z-index: 0; }
-.reading-view::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: rgba(232,229,225,.38); -webkit-backdrop-filter: blur(20px) saturate(.75); backdrop-filter: blur(20px) saturate(.75); }
+.reading-view::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: var(--reading-reveal, 0); transition: opacity .45s ease; background: rgba(232,229,225,.38); -webkit-backdrop-filter: blur(20px) saturate(.75); backdrop-filter: blur(20px) saturate(.75); }
 .reading-view[hidden] { display: none; }
 .reading-toolbar { display: flex; align-items: center; gap: 24px; flex: 0 0 auto; min-height: 48px; padding: 2px 0; }
 .reading-toolbar button { display: inline-flex; align-items: center; min-height: 44px; font-size: 12px; text-decoration: none; color: inherit; }
 .reading-toolbar button:hover { color: #946b3c; }
-.blog-reader { display: block; flex: 1 1 0; min-height: 0; width: 100%; border: 0; background: transparent; transition: opacity .25s ease; }
-.reading-view[data-animated="false"] .blog-reader { transition: none; }
+.blog-reader { display: block; flex: 1 1 0; min-height: 0; width: 100%; border: 0; background: transparent; transition: opacity .45s ease; }
+.reading-view[data-animated="false"]::before, .reading-view[data-animated="false"] .blog-reader { transition: none; }
 /* The translucent glass replaces the opaque paper wash. */
 #stage .archive-atmosphere::after { background: transparent; }
 @media (max-width: 600px) {

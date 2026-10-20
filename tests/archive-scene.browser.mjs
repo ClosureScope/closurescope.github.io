@@ -45,13 +45,15 @@ try {
     });
     await page.waitForFunction(() => window.rhine.stats().decryption.intervals.length > 0);
     assert.equal(await page.locator('.blog-reader').evaluate(node => getComputedStyle(node).opacity), '0', 'scanning marks finish before the article is revealed');
+    assert.equal(await page.locator('.reading-view').evaluate(node => getComputedStyle(node, '::before').opacity), '0', 'frosted glass does not hide the extraction or scanning animation');
     assert(await page.locator('.reading-view').evaluate(node => parseInt(getComputedStyle(node).zIndex) > parseInt(getComputedStyle(document.querySelector('#viewport')).zIndex)), 'the scene cannot paint above the reader');
     await page.waitForFunction(() => {
       const s = window.rhine.stats();
       return s.extraction > 3.3 && s.cameraDetail > .98 && s.decryption.phase === 'clear';
     });
     const extracted = await page.evaluate(() => window.rhine.stats());
-    await page.waitForFunction(() => getComputedStyle(document.querySelector('.blog-reader')).opacity === '1');
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('.blog-reader')).opacity === '1' &&
+      getComputedStyle(document.querySelector('.reading-view'), '::before').opacity === '1');
     assert(extracted.modelPosition[1] > initial.modelPosition[1] + 2, 'the selected model physically rises out of the array');
     assert.notDeepEqual(extracted.cameraPosition, initial.cameraPosition, 'the camera moves with the extraction');
     assert.equal(await page.locator('#stage').getAttribute('inert'), null, 'the model stays interactive beside the reader');

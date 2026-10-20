@@ -65,7 +65,7 @@ export class BlogReader {
     this.root.inert = !visible;
     this.root.dataset.animated = String(animated);
     if (visible) {
-      this.frame.style.opacity = animated ? "0" : "1";
+      this.setReveal(animated ? 0 : 1);
       this.transition.show(!animated);
       this.frame.focus();
     } else {
@@ -74,7 +74,9 @@ export class BlogReader {
   }
 
   setReveal(progress: number) {
-    if (this.visible) this.frame.style.opacity = String(progress);
+    if (!this.visible) return;
+    this.frame.style.opacity = String(progress);
+    this.root.style.setProperty('--reading-reveal', String(progress));
   }
 
   dispose() { this.transition.dispose(); this.root.remove(); }
