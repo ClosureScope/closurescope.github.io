@@ -7,6 +7,9 @@ export class BlogReader {
   private resizeObserver: ResizeObserver;
   private frame = document.createElement('iframe');
   private toolbar: HTMLElement;
+  private stage = document.querySelector<HTMLElement>('#stage')!;
+  private headerLayer = document.createElement('div');
+  private headers = [...document.querySelectorAll<HTMLElement>('header.brand, .system-nav')];
   private href = '';
   private transition: SurfaceTransition;
   private visible = false;
@@ -34,9 +37,16 @@ export class BlogReader {
       const chromeStyle = doc.createElement('style');
       chromeStyle.textContent = `html { scrollbar-width: none; }
         html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; }
+        main { padding-top: max(80px, env(safe-area-inset-top)); }
         @media (min-width: 601px) {
           main { width: min(1040px, calc(100% - 48px)); }
           article { max-width: 54em; }
+        }
+        @media (min-width: 601px) and (max-width: 1100px) {
+          main { width: calc(100% - 120px); }
+        }
+        @media (max-width: 600px) {
+          main { width: calc(100% - 104px); padding-top: max(72px, env(safe-area-inset-top)); }
         }`;
       doc.head.append(chromeStyle);
       doc.querySelectorAll<HTMLElement>('.site-header, .article-meta .back-link').forEach(node => {
@@ -57,9 +67,14 @@ export class BlogReader {
     });
     this.root.append(this.frame);
     document.body.append(this.root);
+    this.headerLayer.className = 'reading-header-stage';
+    this.headerLayer.dataset.mode = 'detail';
+    this.headerLayer.hidden = true;
+    document.body.append(this.headerLayer);
     this.transition = new SurfaceTransition(this.root, this.root, 450, 200);
-    this.resizeObserver = new ResizeObserver(() => this.alignControls());
+    this.resizeObserver = new ResizeObserver(() => { this.alignControls(); this.syncHeader(); });
     this.resizeObserver.observe(this.frame);
+    this.resizeObserver.observe(this.stage);
   }
 
   open(href: string, title: string) {
@@ -77,11 +92,16 @@ export class BlogReader {
     this.root.dataset.animated = String(animated);
     this.scene.dataset.animated = String(animated);
     if (visible) {
+      this.syncHeader();
+      this.headerLayer.append(...this.headers);
+      this.headerLayer.hidden = false;
       this.setReveal(animated ? 0 : 1);
       this.transition.show(!animated);
       this.alignControls();
       this.frame.focus();
     } else {
+      this.stage.append(...this.headers);
+      this.headerLayer.hidden = true;
       this.setSceneReveal(0);
       this.transition.hide(!animated);
     }
@@ -107,10 +127,20 @@ export class BlogReader {
     if (article) this.root.style.setProperty('--reader-content-left', `${article.getBoundingClientRect().left}px`);
   }
 
+  private syncHeader() {
+    const style = getComputedStyle(this.stage);
+    this.headerLayer.style.width = style.width;
+    this.headerLayer.style.height = style.height;
+    this.headerLayer.style.transform = style.transform;
+    this.headerLayer.dataset.layout = this.stage.dataset.layout;
+  }
+
   dispose() {
     this.resizeObserver.disconnect();
     this.setSceneReveal(0);
     this.transition.dispose();
+    this.stage.append(...this.headers);
+    this.headerLayer.remove();
     this.root.remove();
   }
 }

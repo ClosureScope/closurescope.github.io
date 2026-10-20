@@ -119,6 +119,8 @@ try {
       await page.locator('.blog-reader').waitFor({ state: 'visible' });
       const dimensions = await page.locator('.blog-reader').boundingBox();
       const viewport = page.viewportSize();
+      assert.equal(dimensions.y, 0, 'article scrolling reaches the top of the screen');
+      assert.equal(dimensions.height, viewport.height, 'article scrolling uses the full screen height');
       assert(dimensions.width >= viewport.width * (legacy ? .9 : .75), 'reader preserves a generous reading width');
       assert(dimensions.height >= viewport.height * .7, 'reader uses the height freed by removing detail metadata');
       const panel = await page.locator('.reading-view').boundingBox();
@@ -145,8 +147,7 @@ try {
       await reader.locator('body').evaluate(() => document.fonts.ready);
       const articleLeft = await reader.locator('article').evaluate(node => node.getBoundingClientRect().left);
       const backRect = await page.locator('[data-reader="back"]').boundingBox();
-      assert(Math.abs(backRect.x - dimensions.x - articleLeft) < 1, 'return aligns with the article left edge');
-      assert(backRect.y + backRect.height <= dimensions.y + 1, 'return has its own space above the article viewport');
+      assert(backRect.x + backRect.width <= dimensions.x + articleLeft, 'return sits beside the article without overlapping text');
       assert.equal((await page.locator('[data-reader="back"]').textContent()).trim(), '←', 'return uses only the column navigation arrow');
       const arrowStyle = node => {
         const style = getComputedStyle(node);
@@ -159,7 +160,7 @@ try {
       const { width: embeddedWidth, ...embeddedStyle } = embedded;
       const { width: originalWidth, ...originalStyle } = original;
       assert.deepEqual(embeddedStyle, originalStyle, 'original font properties, prose and SVG markup are preserved');
-      if (legacy) assert.equal(embeddedWidth, originalWidth, 'mobile keeps its existing text width');
+      if (legacy) assert.equal(embeddedWidth, dimensions.width - 104, 'mobile reserves a side gutter for the arrow');
       else assert(embeddedWidth > originalWidth * 1.25, 'desktop uses the available space for a wider article');
       const svgSize = node => ({ width: node.getBoundingClientRect().width, height: node.getBoundingClientRect().height });
       const embeddedSvg = reader.locator('.math-visual > svg').first();
