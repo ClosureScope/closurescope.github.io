@@ -1,0 +1,18 @@
+/* These rules only style the archive shell. Article documents load their
+   original global.css in an iframe, outside the scaled 3D stage. */
+.blog-reader { position: fixed; border: 0; z-index: 10; background: white; }
+.blog-reader[hidden] { display: none; }
+.blog-reader-slot { height: 340px; background: white; }
+#detail-content .tab-panel:has(.blog-reader-slot) { height: auto; padding-top: 18px; overflow: visible; }
+.file-summary { max-width: min(900px, 65vw); }
+.category-filters { flex-wrap: wrap; gap: 15px 27px; }
+.file-ticks { position: relative; max-width: 260px; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
+.file-ticks button { flex-shrink: 0; }
+#empty-archive { padding: 10vh 8vw; }
+#empty-archive[hidden] { display: none; }
+noscript { position: fixed; inset: 0; background: #e8e5e1; padding: 32px; overflow: auto; z-index: 100; }
+@media (max-width: 700px) {
+  .blog-reader-slot { height: 45vh; }
+}
+:is([data-layout="compact"], [data-layout="portrait"]) .file-ticks { max-width: 180px; }
+[data-layout="portrait"] .file-ticks { max-width: calc(100vw - 160px); }

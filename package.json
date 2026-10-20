@@ -7,14 +7,19 @@
     "node": ">=22.12.0"
   },
   "scripts": {
+    "predev": "node scripts/patch-rhine-rolling-number.mjs",
+    "prebuild": "node scripts/patch-rhine-rolling-number.mjs",
     "dev": "cd site && astro dev --host 127.0.0.1",
     "build": "cd site && astro build",
     "preview": "cd site && astro preview --host 127.0.0.1",
     "build:posts": "node scripts/build-posts.mjs",
-    "test:math": "node --test tests/math-*.test.mjs"
+    "test:math": "node --test tests/math-*.test.mjs",
+    "test:archive": "node --experimental-strip-types --test tests/archive-*.test.mjs"
   },
   "dependencies": {
-    "astro": "7.3.4"
+    "@kitlangton/rolling-number": "0.4.1",
+    "astro": "7.3.4",
+    "three": "0.183.0"
   },
   "devDependencies": {
     "playwright-core": "1.58.2"

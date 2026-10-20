@@ -1,5 +1,7 @@
 # ClosureScope 博客
 
+首页使用 RhineLabUI 三维档案界面，自动从 `posts/<分类>/*.typ` 生成栏目和文章。写作方法及正文渲染保持原样；界面接入、动态更新与验证说明见 [RhineLabUI 博客界面](docs/rhine-ui.md)。
+
 文章全部写在 `.typ` 中，使用 Typst 原生数学语法、标题、代码块和图片。文章统一引用你提供的 `typst/template.typ`，保留 `frame-it`、`tablem`、`definition` 等命令。Astro 只负责网站外壳；不使用 Markdown/MDX、LaTeX、KaTeX 或 MathJax。
 
 ```text
@@ -104,7 +106,7 @@ typst compile --root . posts/Optimization/least-squares.typ /tmp/hello-world.pdf
 
 本机初始化前：WSL2/Linux、Git 2.43.0、Node 18.19.1、npm 9.2.0；未安装 Typst 和 pnpm。
 
-本项目使用 Node **22.23.2**、pnpm **10.17.1**、Typst **0.15.1**、Astro **7.3.4**。唯一直接网站依赖是 Astro，具体依赖树由 `pnpm-lock.yaml` 固定。没有额外引入 UI 框架、代码高亮库或文件监听库。
+本项目使用 Node **22.23.2**、pnpm **10.17.1**、Typst **0.15.1**、Astro **7.3.4**。网站直接依赖 Astro，以及三维界面使用的 Three.js **0.183.0**、Rolling Number **0.4.1**，具体依赖树由 `pnpm-lock.yaml` 固定。没有额外引入 UI 框架、代码高亮库或文件监听库。
 
 本机的 Node 与 Typst 官方二进制位于被 Git 忽略的 `.tools/`，命令通过已有 PATH 中的 `~/.local/bin/` 链接使用；pnpm 安装在 `~/.local/`。系统 `/usr/bin/node` 未被替换。不要删除 `.tools/`，否则这些链接会失效。所有工具均在 WSL/Linux 内运行。
 
