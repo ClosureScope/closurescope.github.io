@@ -3,7 +3,7 @@ import type { AudioPreferences } from "./audio";
 export function audioSettingsMarkup(prefs: AudioPreferences) {
   return `<div class="audio-settings">${(
     [
-      ["sound", "soundVolume", "INTERFACE SOUND", "操作与启动音效"],
+      ["sound", "soundVolume", "INTERFACE SOUND", "操作音效"],
       ["music", "musicVolume", "BACKGROUND MUSIC", "背景音乐"],
     ] as const
   )
