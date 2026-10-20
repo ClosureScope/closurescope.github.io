@@ -84,7 +84,9 @@ try {
         assert.equal(await page.evaluate(() => window.rhine.stats().selected), firstFiles[1].slug);
         assert.equal(await page.locator('#selected-title').textContent(), firstFiles[1].title);
       }
+      assert((await page.locator('[data-action="search"]').textContent()).includes('DIRECTORY'));
       await page.locator('[data-action="search"]').click();
+      assert(!/ARCHIVE INDEX|ARCHIVE DIRECTORY/.test(await page.locator('.terminal-modal').textContent()));
       assert.equal(await page.locator('.result-row').count(), posts.length);
       assert.equal(await page.locator('.result-name > b, .result-name > i').count(), 0);
       const target = posts.at(-1);
@@ -103,7 +105,38 @@ try {
       assert.equal(await page.evaluate(() => window.rhine.stats().mode), 'detail');
       assert.equal(await page.locator('[data-action="bookmark"], .detail-kicker, #object-id, .detail-footnote > span').count(), 0);
       assert(!/SAVE ARCHIVE|REMOVE FROM SAVED|FILE X-|NO\.\d/.test(await page.locator('#detail-ui').textContent()));
-      await page.locator('[data-action="back"]').click();
+      assert.equal(await page.locator('.detail-tabs, .metadata, .object-caption, .detail-actions, .detail-footnote').count(), 0);
+      assert(!/文章信息|访问日志|正文格式/.test(await page.locator('#detail-ui').textContent()));
+      await page.locator('.blog-reader').waitFor({ state: 'visible' });
+      const dimensions = await page.locator('.blog-reader').boundingBox();
+      const viewport = page.viewportSize();
+      assert(dimensions.width >= viewport.width * .98, 'reader uses full viewport width');
+      assert(dimensions.height >= viewport.height * .85, 'reader fills the available reading height');
+      const reader = page.frameLocator('.blog-reader');
+      await reader.locator('.prose').waitFor();
+      await reader.locator('.site-header').waitFor({ state: 'hidden' });
+      assert(await reader.locator('.article-header').isVisible(), 'original article title remains visible');
+      const typography = prose => {
+        const style = getComputedStyle(prose);
+        return { family: style.fontFamily, size: style.fontSize, lineHeight: style.lineHeight,
+          width: prose.getBoundingClientRect().width, html: prose.innerHTML };
+      };
+      const standalone = await context.newPage();
+      await standalone.goto(`http://archive.test/posts/${target.slug}/`);
+      await standalone.evaluate(() => document.fonts.ready);
+      await reader.locator('body').evaluate(() => document.fonts.ready);
+      assert.deepEqual(await reader.locator('.prose').evaluate(typography), await standalone.locator('.prose').evaluate(typography), 'embedded prose, fonts and SVG match the standalone article');
+      await standalone.close();
+      await reader.locator('body').evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+      assert(await reader.locator('body').evaluate(() => scrollY > 0 && scrollY + innerHeight >= document.documentElement.scrollHeight - 1), 'last lines are reachable by scrolling');
+      await reader.locator('body').press('Escape');
+      assert.equal(await page.evaluate(() => window.rhine.stats().mode), 'archive');
+      await page.locator('[data-action="open"]').first().click();
+      await page.locator('[data-reader="directory"]').click();
+      await page.locator('#archive-search').waitFor({ state: 'visible' });
+      await page.locator('.result-row').last().click();
+      await page.waitForFunction(() => window.rhine.stats().mode === 'detail');
+      await page.locator('[data-reader="back"]').click();
       assert.equal(await page.evaluate(() => window.rhine.stats().mode), 'archive');
     }
     assert.deepEqual(errors, []);

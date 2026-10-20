@@ -1,9 +1,20 @@
 /* These rules only style the archive shell. Article documents load their
    original global.css in an iframe, outside the scaled 3D stage. */
-.blog-reader { position: fixed; border: 0; z-index: 10; background: white; }
-.blog-reader[hidden] { display: none; }
-.blog-reader-slot { height: 340px; background: white; }
-#detail-content .tab-panel:has(.blog-reader-slot) { height: auto; padding-top: 18px; overflow: visible; }
+/* Reading lives outside the transformed stage and fills the real viewport. */
+.reading-view { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; background: white; color: #171713; }
+.reading-view[hidden] { display: none; }
+.reading-toolbar { display: flex; align-items: center; gap: 24px; flex: 0 0 auto; min-height: 64px; padding: 8px max(24px, env(safe-area-inset-right)) 8px max(24px, env(safe-area-inset-left)); background: #e8e5e1; border-bottom: 1px solid #d8d4cc; }
+.reading-toolbar button, .reading-toolbar a { display: inline-flex; align-items: center; min-height: 44px; font-size: 12px; text-decoration: none; color: inherit; }
+.reading-toolbar button:hover, .reading-toolbar a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.reading-toolbar a:focus-visible { outline: 2px solid #a67d48; outline-offset: 4px; }
+.reading-brand { font-size: 16px; font-weight: 700; letter-spacing: -.025em; }
+.reading-tools { margin-left: auto; display: flex; gap: 24px; align-items: center; }
+.blog-reader { display: block; flex: 1 1 0; min-height: 0; width: 100%; border: 0; background: white; }
+@media (max-width: 600px) {
+  .reading-toolbar { min-height: 56px; padding-inline: max(12px, env(safe-area-inset-left)) max(12px, env(safe-area-inset-right)); gap: 12px; }
+  .reading-brand { display: none; }
+  .reading-tools { gap: 16px; }
+}
 .brand h1 { letter-spacing: -.025em; }
 .archive-callout .file-title { width: 100%; align-items: flex-start; text-align: left; white-space: normal; line-height: 1.25; }
 .archive-callout #selected-title { flex: 1 1 auto; min-width: 0; white-space: normal; overflow-wrap: anywhere; }
@@ -18,9 +29,6 @@
 noscript { position: fixed; inset: 0; background: #e8e5e1; padding: 32px; overflow: auto; z-index: 100; }
 .archive-loading { position: fixed; right: 24px; bottom: 58px; z-index: 12; font-size: 11px; letter-spacing: 1px; color: #726f67; }
 .archive-loading button { color: inherit; text-decoration: underline; padding: 8px; }
-@media (max-width: 700px) {
-  .blog-reader-slot { height: 45vh; }
-}
 :is([data-layout="compact"], [data-layout="portrait"]) .file-ticks { max-width: 180px; }
 :is([data-layout="compact"], [data-layout="portrait"]) .system-footer .footer-clock { display: none; }
 [data-layout="portrait"] .file-ticks { max-width: calc(100vw - 160px); }

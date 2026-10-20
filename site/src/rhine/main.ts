@@ -2,8 +2,6 @@ import { BlogReader } from "./blog-reader";
 import "./blog.css";
 import { createRollingClock } from "./rolling-clock";
 import { InspectionOverlay } from "./inspection-overlay";
-import { DocumentDecryption } from "./document-decryption";
-import "./document-decryption.css";
 import "./decryption.css";
 import { escapeHtml } from "./html";
 import {
@@ -26,7 +24,6 @@ import {
   createRollingText,
 } from "@kitlangton/rolling-number";
 import { ArchiveScene } from "./scene";
-import { ModelViewer } from "./model-viewer";
 import { ContentTransition, SurfaceTransition } from "./ui-transitions";
 import { wrap, type ArchiveNavigation } from "./archive-loop";
 import {
@@ -76,7 +73,7 @@ $("#stage").innerHTML = `
   <div class="scene-atmosphere archive-atmosphere"></div>
   <header class="brand">${brandHeading}</header>
   <nav class="system-nav" aria-label="系统导航">
-    <button data-action="search"><span class="nav-glyph">⌕</span> ARCHIVE INDEX <span class="key">/</span></button>
+    <button data-action="search"><span class="nav-glyph">⌕</span> DIRECTORY <span class="key">/</span></button>
     <button class="settings-button" data-action="settings" aria-label="系统设置" title="系统设置"><span class="settings-glyph" aria-hidden="true">◷</span><span class="settings-label">设置</span></button>
   </nav>
   <svg id="inspection-marks" viewBox="0 0 1920 1080" aria-hidden="true"><path id="inspection-lines"/><g id="inspection-corners"></g><circle id="inspection-point" r="1.8"/></svg>
@@ -88,15 +85,10 @@ $("#stage").innerHTML = `
     <div class="column-navigation"><button data-action="column-prev" aria-label="上一列">←</button><div><span id="column-number">COLUMN <span id="column-index">01</span> / <span id="column-total"></span></span><strong id="column-name">${escapeHtml(records[0].category)}</strong></div><button data-action="column-next" aria-label="下一列">→</button></div>
     <div class="archive-hint"><kbd>←</kbd> <kbd>→</kbd> 切换列 <span>／</span> <kbd>↑</kbd> <kbd>↓</kbd> 前后文章 <span>／</span> <kbd>ENTER</kbd> 读取</div>
   </section>
-  <section id="detail-ui" class="detail-ui" aria-label="文章内容" hidden>
-    <button class="back-button" data-action="back">← <span>ARCHIVE OVERVIEW</span><small>ESC</small></button>
-    <div class="object-caption"><div>INTERNAL DATABASE</div><small>DRAG TO INSPECT <span>↔</span></small><button class="viewer-open" data-action="model-viewer">360° 查看文档模型 <span>↗</span></button></div>
-    <article id="detail-content" class="detail-content"></article>
-  </section>
   <footer class="system-footer">${isWallpaper ? '<button type="button" class="three-toggle" data-action="toggle-three" aria-pressed="true" title="卸载三维模型，保留 2D 界面">3D 开启</button>' : ""}<span class="footer-clock">ClosureScope <i>／</i> <span id="clock">00:00:00</span></span></footer>
   <div id="pwa-update-notice" class="pwa-update-notice" role="status" hidden><span>新版本已就绪</span><button data-pwa-action="update">更新并重启 ↻</button></div>
   <div id="modal-root"></div><div id="toast" class="toast" role="status"></div>
-  <div id="loading" class="archive-loading" role="status">LOADING ARCHIVES…</div>
+  <div id="loading" class="archive-loading" role="status">LOADING ARTICLES…</div>
 `;
 
 $("#stage").dataset.mode = "archive";
@@ -106,20 +98,11 @@ let mode: Mode = "archive", selected = 0, ready = false;
 let modal: "search" | "settings" | null = null,
   searchQuery = "",
   filter = "全部文章";
-let activeTab = "overview";
 let toastTimer: ReturnType<typeof setTimeout>;
 let previousFocus: HTMLElement | null = null;
-const detailTransition = new SurfaceTransition(
-  $("#detail-ui"),
-  undefined,
-  180,
-  180,
-);
-const tabTransition = new ContentTransition();
 let modalTransition: SurfaceTransition | undefined;
 let modalClosing = false;
 let modalSiblings: { node: HTMLElement; inert: boolean }[] = [];
-let pendingDetailFocus = false;
 function readLocal<T>(key: string, fallback: T): T {
   try {
     return JSON.parse(localStorage.getItem(key) ?? "null") ?? fallback;
@@ -214,15 +197,7 @@ let scene: ArchiveScene | undefined;
 let threeState: "on" | "closing" | "off" | "loading" = "on";
 let resumeCell: { lane: number; row: number } | undefined;
 let resumeSelection = -1;
-let viewer: ModelViewer | undefined;
-const accessLog: { id: string; time: string }[] = [];
 const columnMemory = archiveColumns.map((_, lane) => columnFiles(lane)[0]);
-function recordAccess() {
-  accessLog.unshift({
-    id: records[selected].id,
-    time: new Date().toLocaleTimeString("en-GB"),
-  });
-}
 function saveAudioPrefs() {
   try {
     localStorage.setItem("closurescope-rhine-settings", JSON.stringify(prefs));
@@ -246,9 +221,7 @@ function savePrefs() {
   if (!motionActive("rollingNumbers"))
     columnCounter.finish();
   if (!motionActive("surfaceTransitions")) {
-    detailTransition.finish();
     modalTransition?.finish();
-    tabTransition.finish();
   }
   scene?.setMotion(prefs.motion);
   scene?.setTheme(
@@ -264,10 +237,7 @@ function savePrefs() {
       ),
     );
   scene?.setSuperPerformance(superPerformanceEnabled());
-  viewer?.setSuperPerformance(superPerformanceEnabled());
   scene?.setQuality(effectiveRenderQuality());
-  viewer?.setQuality(effectiveRenderQuality());
-  viewer?.setMotion(prefs.motion);
   syncQualityUI(prefs.rendering);
   updateQualitySummary();
   rollingTitles.forEach((title) =>
@@ -325,19 +295,9 @@ function fit() {
   if (layoutKey !== previousLayout) {
     previousLayout = layoutKey;
     scene?.resize();
-    viewer?.resize();
   }
   updateQualitySummary();
-  // Re-measure line covers and tab underline after wrapping changes.
-  requestAnimationFrame(() => {
-    documentDecryption.refresh();
-    const tab = document.querySelector<HTMLElement>(
-      ".detail-tabs button.active",
-    );
-    const indicator = document.querySelector<HTMLElement>(".tab-indicator");
-    if (tab && indicator)
-      indicator.style.transform = `translateX(${tab.offsetLeft}px) scaleX(${tab.offsetWidth})`;
-  });
+
 }
 window.addEventListener("resize", fit);
 window.visualViewport?.addEventListener("resize", fit);
@@ -345,7 +305,10 @@ window.visualViewport?.addEventListener("scroll", fit);
 matchMedia("(pointer: coarse)").addEventListener("change", fit);
 fit();
 // Ticks are rebuilt for the selected column; columns need not have equal lengths.
-const blogReader = new BlogReader(() => setMode("archive"));
+const blogReader = new BlogReader(
+  () => setMode("archive"),
+  () => { setMode("archive"); openModal("search"); },
+);
 let renderedColumn = -1;
 
 function setMode(next: Mode) {
@@ -358,42 +321,29 @@ function setMode(next: Mode) {
     rollingTitles.forEach(title => title.finish());
     $("#hover-label").hidden = true;
   }
-  if (next === "detail" && previousMode !== "detail") recordAccess();
   mode = next;
-  syncWallpaperBackground();
   audio.setScene(next);
   $("#stage").dataset.mode = next;
+  $("#stage").inert = next === "detail";
   workbench?.syncVisibility();
+  syncWallpaperBackground();
   if (previousMode !== next) fit();
   $("#archive-ui").inert = next !== "archive" || Boolean(modal) || Boolean(workbench?.enabled);
   $("#archive-ui").setAttribute("aria-hidden", String(next !== "archive" || Boolean(workbench?.enabled)));
   $(".system-nav").inert = Boolean(modal);
   $(".system-footer").inert = Boolean(modal);
   if (next === "detail") {
-    if (previousMode !== "detail") detailTransition.show(!motionActive("surfaceTransitions"));
-  } else if (previousMode === "detail") {
-    pendingDetailFocus = false;
-    tabTransition.cancel();
-    detailTransition.hide(!motionActive("surfaceTransitions"));
-    if (!modal) $(".read-file").focus({ preventScroll: true });
+    const record = records[selected];
+    blogReader.open(record.source, record.title);
   }
-  $("#detail-ui").inert = next !== "detail" || Boolean(modal);
-  scene?.setMode(next);
-  if (next === "detail" && previousMode !== "detail") {
-    renderDetail();
-    pendingDetailFocus = true;
-    if (!scene) {
-      $("#detail-content").style.opacity = "1";
-      $("#detail-content").style.translate = "0 0";
-      $("#detail-content").inert = false;
-    }
-  }
+  blogReader.setVisible(next === "detail");
+  if (previousMode === "detail" && next === "archive" && !modal)
+    $(".read-file").focus({ preventScroll: true });
 }
 function select(index: number, navigation?: ArchiveNavigation) {
   selected = (index + records.length) % records.length;
   columnMemory[fileLocation(selected).lane] = selected;
   if (mode === "detail") setMode("archive");
-  activeTab = "overview";
   scene?.select(selected, navigation);
   updateSelection(navigation);
   const columnMove =
@@ -472,68 +422,6 @@ function openFile() {
     audio.play("open");
   });
 }
-function renderDetail() {
-  tabTransition.cancel();
-  const r = records[selected];
-  $("#detail-content").innerHTML = `
-  <h2>${escapeHtml(r.title)}</h2><div class="detail-title-cn">${escapeHtml(r.category)}<span>ClosureScope</span></div>
-  <div class="detail-rule"></div>
-  <dl class="metadata"><div><dt>CATEGORY / 分类</dt><dd>${escapeHtml(r.category)}</dd></div><div><dt>FORMAT / 正文格式</dt><dd>Typst · HTML / SVG</dd></div></dl>
-  <div class="detail-tabs" role="tablist"><button id="tab-overview" class="active" role="tab" aria-controls="tab-panel" aria-selected="true" data-tab="overview">01 <span>正文</span></button><button id="tab-notes" role="tab" aria-controls="tab-panel" aria-selected="false" data-tab="notes">02 <span>文章信息</span></button><button id="tab-history" role="tab" aria-controls="tab-panel" aria-selected="false" data-tab="history">03 <span>访问日志</span></button><i class="tab-indicator" aria-hidden="true"></i></div>
-  <div id="tab-panel" class="tab-panel" role="tabpanel">${overview()}</div>
-  <div class="detail-actions"><a class="export-button" href="${escapeHtml(r.source)}" target="_top" aria-label="独立阅读 ${escapeHtml(r.title)}">READ <span>↗</span></a></div>
-  <div class="detail-footnote"><a href="${escapeHtml(r.source)}" target="_top">独立阅读 ↗</a></div>`;
-  blogReader.open(r.source, r.title);
-  $("#detail-content").setAttribute("tabindex", "-1");
-  documentDecryption.reset(
-    $("#detail-content"),
-    !motionActive("documentReveal") ||
-      !scene ||
-      scene.decryptionFrame.phase === "clear",
-  );
-  setTab(activeTab, false);
-}
-function overview() {
-  return `<div class="blog-reader-slot" aria-label="文章阅读区域"></div>`;
-}
-function setTab(tab: string, sound = true) {
-  if (sound && tab === activeTab) return;
-  activeTab = tab;
-  document.querySelectorAll("[data-tab]").forEach((b) => {
-    const active = (b as HTMLElement).dataset.tab === tab;
-    b.classList.toggle("active", active);
-    b.setAttribute("aria-selected", String(active));
-    b.setAttribute("tabindex", active ? "0" : "-1");
-  });
-  const r = records[selected];
-  const tabButton = $<HTMLButtonElement>(`[data-tab="${tab}"]`);
-  const indicator = $(".tab-indicator");
-  indicator.style.transition =
-    sound && motionActive("surfaceTransitions") ? "" : "none";
-  indicator.style.transform = `translateX(${tabButton.offsetLeft}px) scaleX(${tabButton.offsetWidth})`;
-  $("#tab-panel").setAttribute("aria-labelledby", tabButton.id);
-  $("#tab-panel").innerHTML =
-    tab === "overview"
-      ? overview()
-      : tab === "notes"
-        ? `<div class="panel-label">ARTICLE / 文章信息</div><p>${escapeHtml(r.title)}</p><p>分类：${escapeHtml(r.category)}</p><p>文件：posts/${escapeHtml(r.category)}/${escapeHtml(r.slug)}.typ</p>`
-        : `<div class="panel-label">ACCESS LOG / 本次访问</div>${accessLog
-            .filter((entry) => entry.id === r.id)
-            .slice(0, 4)
-            .map(
-              (entry) =>
-                `<div class="log-row"><span>${entry.time}</span><span>ClosureScope</span><b>READ AUTHORIZED</b></div>`,
-            )
-            .join(
-              "",
-            )}<p class="log-note">本次会话已通过身份验证。文章内容以当前终端可访问范围展示。</p>`;
-  $("#tab-panel").scrollTop = 0;
-  documentDecryption.refresh();
-  if (sound) {
-    tabTransition.reveal($("#tab-panel"), !motionActive("surfaceTransitions"));
-    audio.play("ui-tick");
-  }
-}
 function notify(message: string) {
   clearTimeout(toastTimer);
   $("#toast").textContent = message;
@@ -576,7 +464,6 @@ function closeModal(afterClose?: () => void) {
     modalSiblings.forEach(({ node, inert }) => (node.inert = inert));
     modalSiblings = [];
     $("#archive-ui").inert = mode !== "archive" || Boolean(workbench?.enabled);
-    $("#detail-ui").inert = mode !== "detail";
     previousFocus?.focus({ preventScroll: true });
     afterClose?.();
   });
@@ -585,7 +472,7 @@ function renderModal() {
   if (!modal) return;
   modalTransition?.dispose();
   $("#modal-root").innerHTML =
-    `<div class="modal-backdrop"><section class="terminal-modal ${modal === "settings" ? "settings-modal" : ""}" role="dialog" aria-modal="true" aria-label="${modal === "settings" ? "系统设置" : "文章检索"}"><div class="modal-top"><span>ClosureScope / ${modal === "settings" ? "SYSTEM PREFERENCES" : "ARCHIVE DIRECTORY"}</span><button data-action="close-modal" aria-label="关闭窗口">CLOSE <span>×</span></button></div>${modal === "settings" ? settingsMarkup() : `<h2>ARCHIVE INDEX<small>文章检索</small></h2><div class="search-field"><span>⌕</span><input id="archive-search" type="search" autocomplete="off" placeholder="输入文章标题、文件名或分类" aria-label="检索文章"/><span class="key">ESC</span></div><div class="category-filters">${categories.map((c, i) => `<button data-filter="${escapeHtml(c)}" class="${i === 0 ? "active" : ""}">${escapeHtml(c)}</button>`).join("")}</div><div class="result-header"><span>FILE / 文章</span><span>CATEGORY / 分类</span><span>ACCESS</span></div><div id="search-results" class="search-results"></div><div class="modal-bottom"><span id="result-count"></span><span>INTERNAL DATABASE <i>●</i> CONNECTED</span></div>`}</section></div>`;
+    `<div class="modal-backdrop"><section class="terminal-modal ${modal === "settings" ? "settings-modal" : ""}" role="dialog" aria-modal="true" aria-label="${modal === "settings" ? "系统设置" : "文章检索"}"><div class="modal-top"><span>ClosureScope / ${modal === "settings" ? "SYSTEM PREFERENCES" : "DIRECTORY"}</span><button data-action="close-modal" aria-label="关闭窗口">CLOSE <span>×</span></button></div>${modal === "settings" ? settingsMarkup() : `<h2>DIRECTORY<small>文章检索</small></h2><div class="search-field"><span>⌕</span><input id="archive-search" type="search" autocomplete="off" placeholder="输入文章标题、文件名或分类" aria-label="检索文章"/><span class="key">ESC</span></div><div class="category-filters">${categories.map((c, i) => `<button data-filter="${escapeHtml(c)}" class="${i === 0 ? "active" : ""}">${escapeHtml(c)}</button>`).join("")}</div><div class="result-header"><span>FILE / 文章</span><span>CATEGORY / 分类</span><span>ACCESS</span></div><div id="search-results" class="search-results"></div><div class="modal-bottom"><span id="result-count"></span><span>INTERNAL DATABASE <i>●</i> CONNECTED</span></div>`}</section></div>`;
   const backdrop = $(".modal-backdrop");
   backdrop.hidden = true;
   modalTransition = new SurfaceTransition(backdrop, $(".terminal-modal"));
@@ -786,10 +673,6 @@ document.addEventListener("click", (e) => {
     renderResults();
     return;
   }
-  if (el.dataset.tab) {
-    setTab(el.dataset.tab);
-    return;
-  }
   const action = el.dataset.action;
   if (action === "toggle-three") {
     void toggleThree();
@@ -801,36 +684,12 @@ document.addEventListener("click", (e) => {
   if (action === "column-prev") stepColumn(-1);
   if (action === "column-next") stepColumn(1);
   if (action === "open") openFile();
-  if (action === "model-viewer" && mode === "detail" && scene) {
-    const activeScene = scene;
-    // Safari does not always focus a button when it is tapped. Capture the
-    // actual opener so closing the modal reliably restores the right control.
-    el.focus({ preventScroll: true });
-    viewer ??= new ModelViewer(
-      $("#stage"),
-      () => {
-        audio.setScene(mode);
-        audio.play("page-close");
-      },
-      (sound) => audio.play(sound === "tick" ? "ui-tick" : sound),
-    );
-    audio.setScene("viewer");
-    viewer.setSuperPerformance(superPerformanceEnabled());
-    viewer.setQuality(effectiveRenderQuality());
-    viewer.setMotion(prefs.motion);
-    scene.finishDecryption();
-    viewer.open(
-      records[selected].title,
-      () => activeScene.createAssemblyModel(),
-      !motionActive("viewerNavigation"),
-    );
-    audio.play("page-open");
-  }
   if (action === "back") {
     setMode("archive");
     audio.play("back");
   }
   if (action === "search" || action === "settings") {
+    if (mode === "detail") setMode("archive");
     el.focus({ preventScroll: true });
     openModal(action);
   }
@@ -856,7 +715,6 @@ document.addEventListener("click", (e) => {
 });
 document.addEventListener("keydown", (e) => {
   if (!started) return;
-  if (viewer?.isOpen) return;
   if (playground?.active && !modal) {
     if (e.key === "Escape") {
       e.preventDefault();
@@ -913,22 +771,12 @@ document.addEventListener("keydown", (e) => {
     return;
   }
   if (typing || modal || !ready) return;
-  if (
-    (e.target as HTMLElement).dataset.tab &&
-    ["ArrowLeft", "ArrowRight"].includes(e.key)
-  ) {
-    e.preventDefault();
-    const tabs = ["overview", "notes", "history"];
-    setTab(
-      tabs[(tabs.indexOf(activeTab) + (e.key === "ArrowRight" ? 1 : 2)) % 3],
-    );
-    $<HTMLButtonElement>(`[data-tab="${activeTab}"]`).focus();
-    return;
-  }
   if (e.key === "/") {
     e.preventDefault();
+    if (mode === "detail") setMode("archive");
     openModal("search");
   }
+  if (mode === "detail") return;
   if (e.key === "ArrowLeft") {
     e.preventDefault();
     stepColumn(-1);
@@ -944,7 +792,6 @@ document.addEventListener("keydown", (e) => {
   if (
     e.key === "Enter" &&
     (document.activeElement === document.body ||
-      document.activeElement?.id === "detail-content" ||
       ["prev", "next", "column-prev", "column-next"].includes(
         (document.activeElement as HTMLElement)?.dataset.action ?? "",
       ) ||
@@ -956,13 +803,6 @@ document.addEventListener("keydown", (e) => {
 });
 
 const inspectionOverlay = new InspectionOverlay();
-const documentDecryption = new DocumentDecryption();
-// A newly opened archive can introduce another font shard. Re-measure its
-// redaction lines after font swap while retaining the current reveal progress.
-document.fonts.addEventListener("loadingdone", () =>
-  documentDecryption.refresh(),
-);
-
 let lastTime = 0,
   frameCount = 0,
   frameStart = performance.now(),
@@ -980,45 +820,18 @@ function frame(ms: number) {
   const time = ms / 1000;
   const theme = scene?.themeAmount ?? (prefs.colorTheme === "dark" ? 1 : 0);
   paintTheme(theme);
-  viewer?.setTheme(theme);
   playground?.tick(time);
   wallpaperEffects?.update(
     time,
     motionIsReduced(),
     motionActive("pointerParallax"),
   );
-  if (!viewer?.isOpen) scene?.update(time);
-  viewer?.update(time);
+  if (mode === "archive") scene?.update(time);
   if (threeState === "closing" && scene?.presentationHidden) releaseThree();
   playground?.position();
-  if (scene && mode === "detail") {
-    documentDecryption.update(
-      time,
-      scene.decryptionFrame,
-      !motionActive("documentReveal"),
-    );
-    $("#detail-content").style.opacity = String(scene.detailVisibility);
-    $("#detail-content").style.translate =
-      `0 ${(1 - scene.detailVisibility) * 18}px`;
-    $("#detail-content").inert = scene.detailVisibility < 0.1;
-    if (
-      pendingDetailFocus &&
-      scene.detailVisibility >= 0.1 &&
-      !modal &&
-      !viewer?.isOpen
-    ) {
-      $("#detail-content").focus({ preventScroll: true });
-      pendingDetailFocus = false;
-    }
-  }
-  blogReader.update(
-    mode === "detail" && activeTab === "overview" && !modal && !modalClosing && !viewer?.isOpen &&
-      (!scene || !motionActive("documentReveal") || scene.decryptionFrame.phase === "clear"),
-    scene?.detailVisibility ?? 1,
-  );
   $("#stage").style.setProperty(
     "--detail-shade",
-    String(scene?.detailVisibility ?? 0),
+    "0",
   );
   const currentScene = scene;
   if (currentScene)
@@ -1047,11 +860,11 @@ function frame(ms: number) {
 function bindScene(scene: ArchiveScene, cell?: { lane: number; row: number }) {
   scene.select(selected, cell ? { cell } : undefined);
   scene.onSelect = (i, cell) => {
-    if (mode !== "archive" || modal || viewer?.isOpen) return;
+    if (mode !== "archive" || modal) return;
     select(i, cell ? { cell } : undefined);
   };
   scene.onNavigate = (axis, direction) => {
-    if (mode !== "archive" || modal || viewer?.isOpen) return;
+    if (mode !== "archive" || modal) return;
     if (axis === "lane") stepColumn(direction);
     else stepFile(direction);
   };
@@ -1100,16 +913,8 @@ function releaseThree() {
   if (!scene) return;
   resumeCell = { ...scene.getStats().selectedCell };
   resumeSelection = selected;
-  viewer?.dispose();
-  viewer = undefined;
   scene.dispose();
   scene = undefined;
-  if (mode === "detail") {
-    $("#detail-content").style.opacity = "1";
-    $("#detail-content").style.translate = "0 0";
-    $("#detail-content").inert = false;
-    documentDecryption.reset($("#detail-content"), true);
-  }
   threeState = "off";
   syncThreeButton();
   $("#hover-label").hidden = true;
@@ -1140,7 +945,7 @@ async function toggleThree() {
     next.renderer.domElement.style.opacity = "0";
     next.setPresentationVisible(false, true);
     await next.load();
-    next.setMode(mode === "detail" ? "detail" : "archive");
+    next.setMode("archive");
     bindScene(next, resumeSelection === selected ? resumeCell : undefined);
     next.revealImmediately();
     scene = next;
