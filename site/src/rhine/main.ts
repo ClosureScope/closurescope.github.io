@@ -831,7 +831,9 @@ function frame(ms: number) {
   scene?.update(time);
   if (threeState === "closing" && scene?.presentationHidden) releaseThree();
   playground?.position();
-  blogReader.setReveal(!scene || !motionActive("documentReveal") ? 1 : scene.detailVisibility);
+  const articleReady = !scene || !motionActive("documentReveal") ||
+    !motionActive("modelDecryption") || scene.decryptionFrame.phase === "clear";
+  blogReader.setReveal(articleReady ? scene?.detailVisibility ?? 1 : 0);
   $("#stage").style.setProperty(
     "--detail-shade",
     String(scene?.detailVisibility ?? 0),

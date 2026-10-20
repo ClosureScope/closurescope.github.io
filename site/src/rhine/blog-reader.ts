@@ -25,6 +25,12 @@ export class BlogReader {
       // Hide duplicate navigation and let the original scene show through.
       // This background change never alters prose typography or SVG math.
       doc.body.style.backgroundColor = 'transparent';
+      // Hide only the document scrollbar; preserve scrolling and the local
+      // horizontal scroll containers used by long formulas and code blocks.
+      const chromeStyle = doc.createElement('style');
+      chromeStyle.textContent = `html { scrollbar-width: none; }
+        html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; }`;
+      doc.head.append(chromeStyle);
       doc.querySelectorAll<HTMLElement>('.site-header, .article-meta .back-link').forEach(node => {
         node.hidden = true;
       });
@@ -57,6 +63,7 @@ export class BlogReader {
     if (this.visible === visible) return;
     this.visible = visible;
     this.root.inert = !visible;
+    this.root.dataset.animated = String(animated);
     if (visible) {
       this.frame.style.opacity = animated ? "0" : "1";
       this.transition.show(!animated);

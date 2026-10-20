@@ -127,6 +127,8 @@ try {
       await reader.locator('.site-header').waitFor({ state: 'hidden' });
       assert.equal(await reader.locator('body').evaluate(node => getComputedStyle(node).backgroundColor), 'rgba(0, 0, 0, 0)', 'the scene shows through the article background');
       assert(await reader.locator('.article-header').isVisible(), 'original article title remains visible');
+      assert.equal(await reader.locator('html').evaluate(node => getComputedStyle(node).scrollbarWidth), 'none', 'only the document scrollbar is hidden');
+      assert((await page.locator('.reading-view').evaluate(node => getComputedStyle(node, '::before').backdropFilter)).includes('blur('), 'the reading background uses frosted glass');
       const typography = prose => {
         const style = getComputedStyle(prose);
         return { family: style.fontFamily, size: style.fontSize, lineHeight: style.lineHeight,
