@@ -4,7 +4,12 @@
 .blog-reader[hidden] { display: none; }
 .blog-reader-slot { height: 340px; background: white; }
 #detail-content .tab-panel:has(.blog-reader-slot) { height: auto; padding-top: 18px; overflow: visible; }
-.file-summary { max-width: min(900px, 65vw); }
+.brand h1 { letter-spacing: -.025em; }
+.archive-callout .file-title { width: 100%; align-items: flex-start; text-align: left; white-space: normal; line-height: 1.25; }
+.archive-callout #selected-title { flex: 1 1 auto; min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+.archive-callout .file-open { flex: 0 0 auto; margin-left: 12px; }
+[data-layout="desktop"] .archive-callout .file-title { width: calc(100% - 59px); }
+.system-footer .footer-clock { margin-left: auto; }
 .category-filters { flex-wrap: wrap; gap: 15px 27px; }
 .file-ticks { position: relative; max-width: 260px; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
 .file-ticks button { flex-shrink: 0; }
@@ -17,4 +22,5 @@ noscript { position: fixed; inset: 0; background: #e8e5e1; padding: 32px; overfl
   .blog-reader-slot { height: 45vh; }
 }
 :is([data-layout="compact"], [data-layout="portrait"]) .file-ticks { max-width: 180px; }
+:is([data-layout="compact"], [data-layout="portrait"]) .system-footer .footer-clock { display: none; }
 [data-layout="portrait"] .file-ticks { max-width: calc(100vw - 160px); }

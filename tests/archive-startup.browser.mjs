@@ -54,6 +54,16 @@ try {
       assert.equal(await page.locator('[data-action="replay"], [data-action="restart"]').count(), 0);
       assert.equal(await page.locator('#stage').getAttribute('inert'), null);
       assert((await page.locator('#selected-title').textContent()).includes(posts[0].title));
+      assert.equal((await page.locator('header.brand').textContent()).trim(), 'ClosureScope');
+      assert.equal(await page.locator('.file-title #selected-title').count(), 1);
+      assert.equal(await page.locator('.archive-callout .eyebrow, .file-summary, #selected-clearance, .powered, .status-light').count(), 0);
+      assert(!/INTERNAL DATABASE|FILE NUMBER|PUBLIC ARCHIVE/.test(await page.locator('#archive-ui').textContent()));
+      assert(!/SESSION AUTHORIZED/.test(await page.locator('.system-footer').textContent()));
+      const heading = await page.locator('#selected-title').evaluate(node => {
+        const rect = node.getBoundingClientRect();
+        return { right: rect.right, width: node.clientWidth, scrollWidth: node.scrollWidth, viewport: innerWidth };
+      });
+      assert(heading.right <= heading.viewport && heading.scrollWidth <= heading.width + 1, 'article heading fits without clipping');
       assert.equal(await page.locator('#three-scene').evaluate(node => getComputedStyle(node).opacity), '1');
       await page.locator('[data-action="settings"]').click();
       assert.equal(await page.locator('[data-motion="boot"]').count(), 0);
@@ -67,6 +77,7 @@ try {
       if (firstFiles.length > 1) {
         await page.locator('[data-action="next"]').click();
         assert.equal(await page.evaluate(() => window.rhine.stats().selected), firstFiles[1].slug);
+        assert.equal(await page.locator('#selected-title').textContent(), firstFiles[1].title);
       }
       await page.locator('[data-action="open"]').first().click();
       assert.equal(await page.evaluate(() => window.rhine.stats().mode), 'detail');

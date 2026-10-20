@@ -83,7 +83,7 @@ $("#stage").innerHTML = `
   <svg id="inspection-marks" viewBox="0 0 1920 1080" aria-hidden="true"><path id="inspection-lines"/><g id="inspection-corners"></g><circle id="inspection-point" r="1.8"/></svg>
   <div id="inspection-text" aria-hidden="true">CONFIDENTIALITY:<strong>GENERAL BUSINESS USE</strong></div>
   <section id="archive-ui" class="archive-ui" aria-label="档案选择">
-    <div class="archive-callout"><div class="eyebrow">INTERNAL DATABASE <span>／</span> <span id="archive-category">${escapeHtml(records[0].category)}</span></div><button class="file-title" data-action="open">FILE NUMBER: <span id="selected-id">X-<span id="selected-code">001</span></span><span class="file-open">↗</span></button><div class="callout-rule"><i></i></div><div class="file-summary"><span id="selected-title">${escapeHtml(records[0].title)}</span><span id="selected-clearance">${escapeHtml(records[0].clearance)}</span></div><button class="read-file" data-action="open">ACCESS FILE <span>→</span></button></div>
+    <div class="archive-callout"><button class="file-title" data-action="open"><span id="selected-title">${escapeHtml(records[0].title)}</span><span class="file-open" aria-hidden="true">↗</span></button><div class="callout-rule"><i></i></div><button class="read-file" data-action="open">ACCESS FILE <span>→</span></button></div>
     <div id="hover-label" class="hover-label" hidden>X-<span id="hover-code">001</span> / <span id="hover-title"></span></div>
     <div class="archive-counter"><span class="tiny-label">ARCHIVE / SELECT</span><div><span id="selected-number">01</span><i>/</i><span class="count-total">${String(columnFiles(0).length).padStart(2, "0")}</span></div></div>
     <div class="archive-navigation"><button data-action="prev" aria-label="上一个档案">↑</button><div id="file-ticks" class="file-ticks"></div><button data-action="next" aria-label="下一个档案">↓</button></div>
@@ -95,8 +95,7 @@ $("#stage").innerHTML = `
     <div class="object-caption"><span id="object-id">NO.001</span><div>INTERNAL DATABASE</div><small>DRAG TO INSPECT <span>↔</span></small><button class="viewer-open" data-action="model-viewer">360° 查看文档模型 <span>↗</span></button></div>
     <article id="detail-content" class="detail-content"></article>
   </section>
-  <div class="powered">POWERED BY <b>RHINE LAB</b><i></i></div>
-  <footer class="system-footer"><span><i class="status-light"></i> SESSION AUTHORIZED${isWallpaper ? '<button type="button" class="three-toggle" data-action="toggle-three" aria-pressed="true" title="卸载三维模型，保留 2D 界面">3D 开启</button>' : ""}</span><span>ClosureScope <i>／</i> <span id="clock">00:00:00</span></span></footer>
+  <footer class="system-footer">${isWallpaper ? '<button type="button" class="three-toggle" data-action="toggle-three" aria-pressed="true" title="卸载三维模型，保留 2D 界面">3D 开启</button>' : ""}<span class="footer-clock">ClosureScope <i>／</i> <span id="clock">00:00:00</span></span></footer>
   <div id="pwa-update-notice" class="pwa-update-notice" role="status" hidden><span>新版本已就绪</span><button data-pwa-action="update">更新并重启 ↻</button></div>
   <div id="modal-root"></div><div id="toast" class="toast" role="status"></div>
   <div id="loading" class="archive-loading" role="status">LOADING ARCHIVES…</div>
@@ -204,10 +203,6 @@ const textOptions = {
   transition: "direct" as const,
   stagger: "none" as const,
 };
-const selectionTitle = createRollingText($("#selected-title"), {
-  ...textOptions,
-  text: $("#selected-title").textContent ?? "",
-});
 const columnTitle = createRollingText($("#column-name"), {
   ...textOptions,
   text: $("#column-name").textContent ?? "",
@@ -216,22 +211,8 @@ const hoverTitle = createRollingText($("#hover-title"), {
   ...textOptions,
   text: "",
 });
-const categoryTitle = createRollingText($("#archive-category"), {
-  ...textOptions,
-  text: $("#archive-category").textContent ?? "",
-});
-const clearanceTitle = createRollingText($("#selected-clearance"), {
-  ...textOptions,
-  text: $("#selected-clearance").textContent ?? "",
-});
-const rollingTitles = [
-  selectionTitle,
-  columnTitle,
-  hoverTitle,
-  categoryTitle,
-  clearanceTitle,
-];
-const selectedCode = createRollingNumber($("#selected-code"), codeOptions);
+const rollingTitles = [columnTitle, hoverTitle];
+const titleTransition = new ContentTransition();
 const hoverCode = createRollingNumber($("#hover-code"), codeOptions);
 const audio = new TerminalAudio();
 let musicSuppressed = false;
@@ -272,10 +253,12 @@ function effectiveRenderQuality() {
 }
 function savePrefs() {
   saveAudioPrefs();
-  if (!motionActive("rollingText"))
+  if (!motionActive("rollingText")) {
     rollingTitles.forEach((title) => title.finish());
+    titleTransition.finish();
+  }
   if (!motionActive("rollingNumbers"))
-    [fileCounter, columnCounter, selectedCode, hoverCode].forEach((counter) =>
+    [fileCounter, columnCounter, hoverCode].forEach((counter) =>
       counter.finish(),
     );
   if (!motionActive("surfaceTransitions")) {
@@ -313,9 +296,6 @@ function savePrefs() {
     }),
   );
   columnCounter.update({
-    animated: motionActive("rollingNumbers") && mode === "archive",
-  });
-  selectedCode.update({
     animated: motionActive("rollingNumbers") && mode === "archive",
   });
   hoverCode.update({
@@ -465,29 +445,14 @@ function updateSelection(navigation?: ArchiveNavigation) {
   const r = records[selected];
   const { lane } = fileLocation(selected);
   const files = columnFiles(lane);
-  selectionTitle.update({
-    text: r.title,
-    animated: motionActive("rollingText") && mode === "archive",
-  });
-  clearanceTitle.update({
-    text: r.clearance,
-    animated: motionActive("rollingText") && mode === "archive",
-  });
-  categoryTitle.update({
-    text: r.category,
-    animated: motionActive("rollingText") && mode === "archive",
-  });
-  const direction =
-    navigation && "axis" in navigation
-      ? navigation.direction > 0
-        ? "up"
-        : "down"
-      : "auto";
-  selectedCode.update({
-    value: r.code,
-    animated: motionActive("rollingNumbers") && mode === "archive",
-    direction,
-  });
+  const title = $("#selected-title");
+  if (title.textContent !== r.title) {
+    title.textContent = r.title;
+    titleTransition.reveal(title, !started || !motionActive("rollingText"));
+  }
+  const direction = navigation && "axis" in navigation
+    ? navigation.direction > 0 ? "up" : "down"
+    : "auto";
   fileCounter.update({
     value: files.indexOf(selected) + 1,
     animated: motionActive("rollingNumbers") && mode === "archive",
@@ -570,7 +535,7 @@ function renderDetail() {
   const r = records[selected];
   $("#object-id").textContent = "NO." + String(selected + 1).padStart(3, "0");
   $("#detail-content").innerHTML = `
-  <div class="detail-kicker"><span>FILE X-${String(r.code).padStart(3, "0")}</span><span>${escapeHtml(r.clearance)}</span></div>
+  <div class="detail-kicker"><span>FILE X-${String(r.code).padStart(3, "0")}</span></div>
   <h2>${escapeHtml(r.title)}</h2><div class="detail-title-cn">${escapeHtml(r.category)}<span>ClosureScope</span></div>
   <div class="detail-rule"></div>
   <dl class="metadata"><div><dt>CATEGORY / 分类</dt><dd>${escapeHtml(r.category)}</dd></div><div><dt>FORMAT / 正文格式</dt><dd>Typst · HTML / SVG</dd></div></dl>
@@ -684,7 +649,7 @@ function renderModal() {
   if (!modal) return;
   modalTransition?.dispose();
   $("#modal-root").innerHTML =
-    `<div class="modal-backdrop"><section class="terminal-modal ${modal === "settings" ? "settings-modal" : ""}" role="dialog" aria-modal="true" aria-label="${modal === "settings" ? "系统设置" : modal === "saved" ? "收藏档案" : "档案检索"}"><div class="modal-top"><span>RHINE LAB / ${modal === "settings" ? "SYSTEM PREFERENCES" : "ARCHIVE DIRECTORY"}</span><button data-action="close-modal" aria-label="关闭窗口">CLOSE <span>×</span></button></div>${modal === "settings" ? settingsMarkup() : `<h2>${modal === "saved" ? "SAVED ARCHIVES" : "ARCHIVE INDEX"}<small>${modal === "saved" ? "收藏档案" : "内部档案检索"}</small></h2><div class="search-field"><span>⌕</span><input id="archive-search" type="search" autocomplete="off" placeholder="输入文章标题、文件名或分类" aria-label="检索档案"/><span class="key">ESC</span></div><div class="category-filters">${categories.map((c, i) => `<button data-filter="${escapeHtml(c)}" class="${i === 0 ? "active" : ""}">${escapeHtml(c)}</button>`).join("")}</div><div class="result-header"><span>FILE / 档案</span><span>CATEGORY / 分类</span><span>ACCESS</span></div><div id="search-results" class="search-results"></div><div class="modal-bottom"><span id="result-count"></span><span>INTERNAL DATABASE <i>●</i> CONNECTED</span></div>`}</section></div>`;
+    `<div class="modal-backdrop"><section class="terminal-modal ${modal === "settings" ? "settings-modal" : ""}" role="dialog" aria-modal="true" aria-label="${modal === "settings" ? "系统设置" : modal === "saved" ? "收藏档案" : "档案检索"}"><div class="modal-top"><span>ClosureScope / ${modal === "settings" ? "SYSTEM PREFERENCES" : "ARCHIVE DIRECTORY"}</span><button data-action="close-modal" aria-label="关闭窗口">CLOSE <span>×</span></button></div>${modal === "settings" ? settingsMarkup() : `<h2>${modal === "saved" ? "SAVED ARCHIVES" : "ARCHIVE INDEX"}<small>${modal === "saved" ? "收藏档案" : "内部档案检索"}</small></h2><div class="search-field"><span>⌕</span><input id="archive-search" type="search" autocomplete="off" placeholder="输入文章标题、文件名或分类" aria-label="检索档案"/><span class="key">ESC</span></div><div class="category-filters">${categories.map((c, i) => `<button data-filter="${escapeHtml(c)}" class="${i === 0 ? "active" : ""}">${escapeHtml(c)}</button>`).join("")}</div><div class="result-header"><span>FILE / 档案</span><span>CATEGORY / 分类</span><span>ACCESS</span></div><div id="search-results" class="search-results"></div><div class="modal-bottom"><span id="result-count"></span><span>INTERNAL DATABASE <i>●</i> CONNECTED</span></div>`}</section></div>`;
   const backdrop = $(".modal-backdrop");
   backdrop.hidden = true;
   modalTransition = new SurfaceTransition(backdrop, $(".terminal-modal"));
@@ -747,7 +712,7 @@ function motionPreferenceNoteMarkup() {
   return `<div id="motion-preference-note" class="motion-preference-note"><p>${motionSummary(prefs.motion)}</p><span>预设：${preset === "full" ? "完整动画" : preset === "reduced" ? "减少动画" : "自定义"} · 选择会保存在本站</span>${allEnabled ? "" : '<button data-action="enable-motion">启用完整动画</button>'}</div>`;
 }
 function settingsMarkup() {
-  return `<h2>SYSTEM SETTINGS<small>终端偏好设置</small></h2><p class="settings-intro">ClosureScope <span>·</span> SESSION AUTHORIZED</p>${isWallpaper ? '<p class="wallpaper-settings-note">每次启动都会读取 Wallpaper Engine 中的设置。在此修改仅对当前运行生效，无法持久保存；如需保留，请在 Wallpaper Engine 的壁纸属性中调整。</p>' : ""}<div class="settings-list">${themeSettingsMarkup(prefs.colorTheme === "dark")}${!isWallpaper ? `<label><div><strong>SUPER PERFORMANCE</strong><span>降低三维画质和渲染分辨率，保留完整动效；关闭后恢复原画质</span></div><input type="checkbox" data-pref="superPerformance" ${prefs.superPerformance ? "checked" : ""}/><i class="toggle"></i></label>` : ""}${workbench?.settingsMarkup() ?? ""}${audioSettingsMarkup(prefs)}</div>${motionPreferenceNoteMarkup()}${motionSettingsMarkup(prefs.motion, prefs.motionPreset)}${qualityMarkup(prefs.rendering)}${pwaSettingsMarkup()}<div class="settings-shortcuts">${isWallpaper ? "<span>DESKTOP CONTROLS</span><p>拖动阵列或点击界面按钮浏览档案。桌面模式下，方向键与滚轮可能无法传入壁纸。</p>" : "<span>KEYBOARD CONTROLS</span><p><kbd>←</kbd><kbd>→</kbd> 切列 <kbd>↑</kbd><kbd>↓</kbd> 选档 <kbd>ENTER</kbd> 读取 <kbd>/</kbd> 检索 <kbd>ESC</kbd> 返回</p>"}</div><div class="settings-bottom">${!isWallpaper && document.fullscreenEnabled ? '<button data-action="fullscreen">FULLSCREEN <span>↗</span></button>' : ""}</div><div class="modal-bottom"><span>ANALYSIS OS / 1.0 · 使用 MiSans 字体（小米） <a href="${assetUrl("fonts/MiSans-license.pdf")}" target="_blank" rel="noopener">字体许可</a></span><span>POWERED BY RHINE LAB</span></div>`;
+  return `<h2>SYSTEM SETTINGS<small>终端偏好设置</small></h2><p class="settings-intro">ClosureScope</p>${isWallpaper ? '<p class="wallpaper-settings-note">每次启动都会读取 Wallpaper Engine 中的设置。在此修改仅对当前运行生效，无法持久保存；如需保留，请在 Wallpaper Engine 的壁纸属性中调整。</p>' : ""}<div class="settings-list">${themeSettingsMarkup(prefs.colorTheme === "dark")}${!isWallpaper ? `<label><div><strong>SUPER PERFORMANCE</strong><span>降低三维画质和渲染分辨率，保留完整动效；关闭后恢复原画质</span></div><input type="checkbox" data-pref="superPerformance" ${prefs.superPerformance ? "checked" : ""}/><i class="toggle"></i></label>` : ""}${workbench?.settingsMarkup() ?? ""}${audioSettingsMarkup(prefs)}</div>${motionPreferenceNoteMarkup()}${motionSettingsMarkup(prefs.motion, prefs.motionPreset)}${qualityMarkup(prefs.rendering)}${pwaSettingsMarkup()}<div class="settings-shortcuts">${isWallpaper ? "<span>DESKTOP CONTROLS</span><p>拖动阵列或点击界面按钮浏览档案。桌面模式下，方向键与滚轮可能无法传入壁纸。</p>" : "<span>KEYBOARD CONTROLS</span><p><kbd>←</kbd><kbd>→</kbd> 切列 <kbd>↑</kbd><kbd>↓</kbd> 选档 <kbd>ENTER</kbd> 读取 <kbd>/</kbd> 检索 <kbd>ESC</kbd> 返回</p>"}</div><div class="settings-bottom">${!isWallpaper && document.fullscreenEnabled ? '<button data-action="fullscreen">FULLSCREEN <span>↗</span></button>' : ""}</div><div class="modal-bottom"><span>ClosureScope · 使用 MiSans 字体（小米） <a href="${assetUrl("fonts/MiSans-license.pdf")}" target="_blank" rel="noopener">字体许可</a></span></div>`;
 }
 
 document.addEventListener("input", (e) => {
