@@ -322,6 +322,9 @@ function setMode(next: Mode) {
     $("#hover-label").hidden = true;
   }
   mode = next;
+  // The full-page reader overlays the archive; keep its scene revealed and
+  // reset pointer state when entering or leaving the reader.
+  scene?.setMode("archive");
   audio.setScene(next);
   $("#stage").dataset.mode = next;
   $("#stage").inert = next === "detail";

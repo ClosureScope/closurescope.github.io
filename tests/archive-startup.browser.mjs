@@ -48,6 +48,8 @@ try {
       const initial = await page.evaluate(() => window.rhine.stats());
       assert.equal(initial.mode, 'archive');
       assert.equal(initial.startup, 'started');
+      assert.equal(initial.browsing, true, 'loaded archive is revealed and accepts pointer navigation');
+      assert.equal(initial.reveal, 1);
       assert.equal(initial.audio.scene, 'archive');
       assert.equal(initial.audio.preferences.sound, true);
       assert.equal(initial.audio.preferences.music, true);
@@ -83,6 +85,8 @@ try {
         await page.locator('[data-action="next"]').click();
         assert.equal(await page.evaluate(() => window.rhine.stats().selected), firstFiles[1].slug);
         assert.equal(await page.locator('#selected-title').textContent(), firstFiles[1].title);
+        await page.locator('#three-scene canvas').dispatchEvent('wheel', { deltaY: 100 });
+        assert.equal(await page.evaluate(() => window.rhine.stats().selected), firstFiles[2 % firstFiles.length].slug, 'scrolling the model advances the article');
       }
       assert((await page.locator('[data-action="search"]').textContent()).includes('DIRECTORY'));
       await page.locator('[data-action="search"]').click();
@@ -138,6 +142,20 @@ try {
       await page.waitForFunction(() => window.rhine.stats().mode === 'detail');
       await page.locator('[data-reader="back"]').click();
       assert.equal(await page.evaluate(() => window.rhine.stats().mode), 'archive');
+      assert.equal(await page.evaluate(() => window.rhine.stats().browsing), true, 'returning from reading restores pointer navigation');
+      const categoryFiles = posts.filter(post => post.category === target.category);
+      if (categoryFiles.length > 1) {
+        await page.locator('#three-scene canvas').dispatchEvent('wheel', { deltaY: 100 });
+        assert.equal(await page.evaluate(() => window.rhine.stats().selected), categoryFiles[0].slug, 'model scrolling still works after returning from reading');
+      }
+      await page.mouse.move(30, viewport.height * .3);
+      await page.mouse.down();
+      assert.equal(await page.evaluate(() => window.rhine.stats().holdingArchive), true, 'model accepts a real pointer drag');
+      await page.mouse.move(80, viewport.height * .3 + 50, { steps: 3 });
+      assert(await page.evaluate(() => window.rhine.stats().dragTrack !== null), 'dragging moves the model track');
+      await page.mouse.up();
+      assert.equal(await page.evaluate(() => window.rhine.stats().holdingArchive), false);
+
     }
     assert.deepEqual(errors, []);
     await context.close();
