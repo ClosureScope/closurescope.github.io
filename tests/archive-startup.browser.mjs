@@ -148,7 +148,11 @@ try {
       assert(Math.abs(backRect.x - dimensions.x - articleLeft) < 1, 'return aligns with the article left edge');
       const embedded = await reader.locator('.prose').evaluate(typography);
       const original = await standalone.locator('.prose').evaluate(typography);
-      assert.deepEqual(embedded, original, 'original font properties, text width, prose and SVG markup are preserved');
+      const { width: embeddedWidth, ...embeddedStyle } = embedded;
+      const { width: originalWidth, ...originalStyle } = original;
+      assert.deepEqual(embeddedStyle, originalStyle, 'original font properties, prose and SVG markup are preserved');
+      if (legacy) assert.equal(embeddedWidth, originalWidth, 'mobile keeps its existing text width');
+      else assert(embeddedWidth > originalWidth * 1.25, 'desktop uses the available space for a wider article');
       const svgSize = node => ({ width: node.getBoundingClientRect().width, height: node.getBoundingClientRect().height });
       const embeddedSvg = reader.locator('.math-visual > svg').first();
       if (await embeddedSvg.count()) {

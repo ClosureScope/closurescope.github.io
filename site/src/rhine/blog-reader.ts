@@ -33,7 +33,11 @@ export class BlogReader {
       // horizontal scroll containers used by long formulas and code blocks.
       const chromeStyle = doc.createElement('style');
       chromeStyle.textContent = `html { scrollbar-width: none; }
-        html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; }`;
+        html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; }
+        @media (min-width: 601px) {
+          main { width: min(1040px, calc(100% - 48px)); }
+          article { max-width: 54em; }
+        }`;
       doc.head.append(chromeStyle);
       doc.querySelectorAll<HTMLElement>('.site-header, .article-meta .back-link').forEach(node => {
         node.hidden = true;
