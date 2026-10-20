@@ -11,5 +11,5 @@ site/dist/
 .env
 .env.*
 !.env.example
-posts/*.pdf
+posts/**/*.pdf
 template.pdf
