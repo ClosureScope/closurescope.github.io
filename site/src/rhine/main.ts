@@ -6,6 +6,7 @@ import "./decryption.css";
 import { escapeHtml } from "./html";
 import {
   qualityPresets,
+  type QualityPreset,
   type RenderQuality,
 } from "./render-quality";
 import { qualityMarkup, syncQualityUI } from "./quality-settings";
@@ -115,7 +116,7 @@ const storedPrefs = readLocal<
     reduced: boolean;
     quality: boolean;
     rendering: RenderQuality;
-    renderPreset: "original" | "performance";
+    renderPreset: QualityPreset;
     superPerformance: boolean;
     colorTheme: "light" | "dark";
     motion: StoredMotion;
@@ -130,7 +131,8 @@ const initialMotion = createMotionPreferences(
       : undefined),
 );
 const initialMotionPreset = motionPresetFor(initialMotion);
-const initialRenderPreset = storedPrefs.renderPreset === "performance" ? "performance" : "original";
+const initialRenderPreset: QualityPreset = storedPrefs.renderPreset && Object.hasOwn(qualityPresets, storedPrefs.renderPreset)
+  ? storedPrefs.renderPreset : "original";
 const prefs = {
   sound: storedPrefs.sound ?? true,
   music: storedPrefs.music ?? storedPrefs.sound ?? true,
@@ -140,8 +142,8 @@ const prefs = {
   motionPreset: initialMotionPreset,
   quality: storedPrefs.quality ?? true,
   superPerformance: false,
-  renderPreset: initialRenderPreset as "original" | "performance",
-  rendering: { ...qualityPresets[initialRenderPreset] },
+  renderPreset: initialRenderPreset,
+  rendering: { ...qualityPresets[initialRenderPreset] } as RenderQuality,
   colorTheme: storedPrefs.colorTheme === "dark" ? "dark" : "light",
 };
 const motionActive = (key: MotionKey) => motionEnabled(prefs.motion, key);
@@ -533,9 +535,10 @@ document.addEventListener("input", (e) => {
 });
 document.addEventListener("change", (e) => {
   const el = e.target as HTMLInputElement;
-  if (el.id === "quality-preset" && (el.value === "original" || el.value === "performance")) {
-    prefs.renderPreset = el.value;
-    prefs.rendering = { ...qualityPresets[el.value] };
+  if (el.id === "quality-preset" && Object.hasOwn(qualityPresets, el.value)) {
+    const preset = el.value as QualityPreset;
+    prefs.renderPreset = preset;
+    prefs.rendering = { ...qualityPresets[preset] };
     savePrefs();
     return;
   }

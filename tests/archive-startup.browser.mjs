@@ -96,6 +96,17 @@ try {
       await page.waitForFunction(() => window.rhine?.stats().ready);
       await page.locator('[data-action="settings"]').click();
       assert.equal(await page.locator('#quality-preset').inputValue(), 'performance', 'quality choice survives reloading');
+      for (const [preset, samples] of [['high', 32], ['ultra', 64]]) {
+        await page.locator('#quality-preset').selectOption(preset);
+        const quality = await page.locator('#three-scene').evaluate(node => JSON.parse(node.dataset.renderQuality));
+        assert.equal(quality.shadows, 4096);
+        assert.equal(quality.antialias, 'smaa');
+        assert.equal(quality.aoSamples, samples);
+      }
+      await page.reload();
+      await page.waitForFunction(() => window.rhine?.stats().ready);
+      await page.locator('[data-action="settings"]').click();
+      assert.equal(await page.locator('#quality-preset').inputValue(), 'ultra', 'ultra quality survives reloading');
       await page.locator('#quality-preset').selectOption('original');
       const restoredQuality = await page.locator('#three-scene').evaluate(node => JSON.parse(node.dataset.renderQuality));
       assert.equal(restoredQuality.aoSamples, 32);
