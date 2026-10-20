@@ -3,6 +3,8 @@ import { SurfaceTransition } from "./ui-transitions";
 /** Keep the original article in its own, unscaled viewport. */
 export class BlogReader {
   private root = document.createElement('section');
+  private scene = document.querySelector<HTMLElement>('.scene-visuals')!;
+  private resizeObserver: ResizeObserver;
   private frame = document.createElement('iframe');
   private href = '';
   private transition: SurfaceTransition;
@@ -21,6 +23,7 @@ export class BlogReader {
     this.frame.addEventListener('load', () => {
       const doc = this.frame.contentDocument;
       if (!doc) return;
+      this.alignControls();
       // Retain the original article title, prose, CSS, fonts and SVG math.
       // Hide duplicate navigation and let the original scene show through.
       // This background change never alters prose typography or SVG math.
@@ -49,6 +52,8 @@ export class BlogReader {
     this.root.append(this.frame);
     document.body.append(this.root);
     this.transition = new SurfaceTransition(this.root, this.root, 450, 200);
+    this.resizeObserver = new ResizeObserver(() => this.alignControls());
+    this.resizeObserver.observe(this.frame);
   }
 
   open(href: string, title: string) {
@@ -64,11 +69,14 @@ export class BlogReader {
     this.visible = visible;
     this.root.inert = !visible;
     this.root.dataset.animated = String(animated);
+    this.scene.dataset.animated = String(animated);
     if (visible) {
       this.setReveal(animated ? 0 : 1);
       this.transition.show(!animated);
+      this.alignControls();
       this.frame.focus();
     } else {
+      this.setSceneReveal(0);
       this.transition.hide(!animated);
     }
   }
@@ -76,8 +84,24 @@ export class BlogReader {
   setReveal(progress: number) {
     if (!this.visible) return;
     this.frame.style.opacity = String(progress);
-    this.root.style.setProperty('--reading-reveal', String(progress));
+    this.setSceneReveal(progress);
   }
 
-  dispose() { this.transition.dispose(); this.root.remove(); }
+  private setSceneReveal(progress: number) {
+    this.scene.style.setProperty('--scene-reading-blur', `${14 * progress}px`);
+    this.scene.style.setProperty('--scene-reading-saturation', String(1 - .2 * progress));
+    this.scene.style.setProperty('--scene-reading-reveal', String(progress));
+  }
+
+  private alignControls() {
+    const article = this.frame.contentDocument?.querySelector('article');
+    if (article) this.root.style.setProperty('--reader-content-left', `${article.getBoundingClientRect().left}px`);
+  }
+
+  dispose() {
+    this.resizeObserver.disconnect();
+    this.setSceneReveal(0);
+    this.transition.dispose();
+    this.root.remove();
+  }
 }

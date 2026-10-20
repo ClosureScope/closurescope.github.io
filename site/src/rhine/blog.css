@@ -1,16 +1,19 @@
 /* These rules only style the archive shell. Article documents load their
    original global.css in an iframe, outside the scaled 3D stage. */
 /* Original scene presentation, enlarged and centered without a separate card. */
-.reading-view { --reader-top: max(72px, calc(env(safe-area-inset-top) + 56px)); --reader-controls-top: max(8px, env(safe-area-inset-top)); position: fixed; top: var(--reader-top); bottom: 0; left: 0; right: 0; width: min(1040px, calc(100% - 48px)); margin-inline: auto; z-index: 10; display: flex; flex-direction: column; background: transparent; color: #171713; isolation: isolate; }
+.reading-view { --reader-top: max(72px, calc(env(safe-area-inset-top) + 56px)); position: fixed; top: var(--reader-top); bottom: 0; left: 0; right: 0; width: min(1040px, calc(100% - 48px)); margin-inline: auto; z-index: 10; display: flex; flex-direction: column; background: transparent; color: #171713; isolation: isolate; }
 /* Keep the complete scene and its decryption marks below the glass and prose. */
 #viewport { z-index: 0; }
-.reading-view::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: var(--reading-reveal, 0); transition: opacity .45s ease; background: rgba(232,229,225,.38); -webkit-backdrop-filter: blur(20px) saturate(.75); backdrop-filter: blur(20px) saturate(.75); }
+/* Blur the whole scene together; branding, navigation and prose are siblings. */
+.scene-visuals { position: absolute; inset: 0; z-index: 0; filter: blur(var(--scene-reading-blur, 0px)) saturate(var(--scene-reading-saturation, 1)); transition: filter .45s ease; }
+.scene-visuals::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: rgba(232,229,225,.28); opacity: var(--scene-reading-reveal, 0); transition: opacity .45s ease; }
+.scene-visuals[data-animated="false"], .scene-visuals[data-animated="false"]::after { transition: none; }
 .reading-view[hidden] { display: none; }
-.reading-toolbar { position: absolute; top: calc(var(--reader-controls-top) - var(--reader-top)); left: 50%; transform: translateX(-50%); display: flex; align-items: center; min-height: 48px; padding: 2px 0; white-space: nowrap; }
+.reading-toolbar { position: absolute; z-index: 2; top: -16px; left: var(--reader-content-left, 24px); display: flex; align-items: center; min-height: 48px; padding: 2px 0; white-space: nowrap; }
 .reading-toolbar button { display: inline-flex; align-items: center; min-height: 44px; font-size: 12px; text-decoration: none; color: inherit; }
 .reading-toolbar button:hover { color: #946b3c; }
 .blog-reader { display: block; flex: 1 1 0; min-height: 0; width: 100%; border: 0; background: transparent; transition: opacity .45s ease; }
-.reading-view[data-animated="false"]::before, .reading-view[data-animated="false"] .blog-reader { transition: none; }
+.reading-view[data-animated="false"] .blog-reader { transition: none; }
 /* The translucent glass replaces the opaque paper wash. */
 #stage .archive-atmosphere::after { background: transparent; }
 @media (max-width: 600px) {
@@ -18,7 +21,7 @@
 }
 /* Reserve only the actual header height; the return control takes no reading space. */
 @media (min-width: 1100px) and (min-aspect-ratio: 21/20) {
-  .reading-view { --reader-top: max(80px, 10vh); --reader-controls-top: calc(7vh - 24px); }
+  .reading-view { --reader-top: max(80px, 10vh); }
 }
 /* Keep the original horizontal anchors and halve the header's top inset. */
 #stage[data-layout="desktop"] .brand { top: 57px; }

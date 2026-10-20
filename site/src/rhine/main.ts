@@ -69,15 +69,17 @@ const $ = <T extends HTMLElement = HTMLElement>(selector: string) =>
 import { brandHeading } from "./brand";
 
 $("#stage").innerHTML = `
-  <div id="three-scene" class="three-scene"></div>
-  <div class="scene-atmosphere archive-atmosphere"></div>
+  <div class="scene-visuals">
+    <div id="three-scene" class="three-scene"></div>
+    <div class="scene-atmosphere archive-atmosphere"></div>
+    <svg id="inspection-marks" viewBox="0 0 1920 1080" aria-hidden="true"><path id="inspection-lines"/><g id="inspection-corners"></g><circle id="inspection-point" r="1.8"/></svg>
+    <div id="inspection-text" aria-hidden="true">CONFIDENTIALITY:<strong>GENERAL BUSINESS USE</strong></div>
+  </div>
   <header class="brand">${brandHeading}</header>
   <nav class="system-nav" aria-label="系统导航">
     <button data-action="search"><span class="nav-glyph">⌕</span> DIRECTORY <span class="key">/</span></button>
     <button class="settings-button" data-action="settings" aria-label="系统设置" title="系统设置"><span class="settings-glyph" aria-hidden="true">◷</span><span class="settings-label">设置</span></button>
   </nav>
-  <svg id="inspection-marks" viewBox="0 0 1920 1080" aria-hidden="true"><path id="inspection-lines"/><g id="inspection-corners"></g><circle id="inspection-point" r="1.8"/></svg>
-  <div id="inspection-text" aria-hidden="true">CONFIDENTIALITY:<strong>GENERAL BUSINESS USE</strong></div>
   <section id="archive-ui" class="archive-ui" aria-label="文章选择">
     <div class="archive-callout"><button class="file-title" data-action="open"><span id="selected-title">${escapeHtml(records[0].title)}</span><span class="file-open" aria-hidden="true">↗</span></button><div class="callout-rule"><i></i></div><button class="read-file" data-action="open">ACCESS FILE <span>→</span></button></div>
     <div id="hover-label" class="hover-label" hidden><span id="hover-title"></span></div>

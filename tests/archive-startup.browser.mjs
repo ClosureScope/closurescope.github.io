@@ -128,7 +128,8 @@ try {
       assert.equal(await reader.locator('body').evaluate(node => getComputedStyle(node).backgroundColor), 'rgba(0, 0, 0, 0)', 'the scene shows through the article background');
       assert(await reader.locator('.article-header').isVisible(), 'original article title remains visible');
       assert.equal(await reader.locator('html').evaluate(node => getComputedStyle(node).scrollbarWidth), 'none', 'only the document scrollbar is hidden');
-      assert((await page.locator('.reading-view').evaluate(node => getComputedStyle(node, '::before').backdropFilter)).includes('blur('), 'the reading background uses frosted glass');
+      assert((await page.locator('.scene-visuals').evaluate(node => getComputedStyle(node).filter)).includes('blur('), 'frosting is applied to the complete scene');
+      assert.equal(await page.locator('header.brand, .system-nav').evaluateAll(nodes => nodes.some(node => node.closest('.scene-visuals'))), false, 'navigation stays outside the scene blur');
       const typography = prose => {
         const style = getComputedStyle(prose);
         return { family: style.fontFamily, size: style.fontSize, lineHeight: style.lineHeight,
@@ -139,6 +140,9 @@ try {
       await standalone.goto(`http://archive.test/posts/${target.slug}/`);
       await standalone.evaluate(() => document.fonts.ready);
       await reader.locator('body').evaluate(() => document.fonts.ready);
+      const articleLeft = await reader.locator('article').evaluate(node => node.getBoundingClientRect().left);
+      const backRect = await page.locator('[data-reader="back"]').boundingBox();
+      assert(Math.abs(backRect.x - dimensions.x - articleLeft) < 1, 'return aligns with the article left edge');
       assert.deepEqual(await reader.locator('.prose').evaluate(typography), await standalone.locator('.prose').evaluate(typography), 'embedded prose, fonts and SVG match the standalone article');
       await standalone.close();
       await reader.locator('body').evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
