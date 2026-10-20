@@ -5,16 +5,12 @@ import { InspectionOverlay } from "./inspection-overlay";
 import "./decryption.css";
 import { escapeHtml } from "./html";
 import {
-  normalizeQuality,
   qualityPresets,
-  type QualityPreset,
   type RenderQuality,
 } from "./render-quality";
-import { qualityMarkup, syncQualityUI } from "./quality-settings";
 import { superPerformanceQuality, wallpaperQuality } from "./wallpaper-quality";
 import "@kitlangton/rolling-number/styles.css";
 import "./style.css";
-import "./quality-settings.css";
 import "./responsive.css";
 import { viewportLayout } from "./viewport-layout";
 import {
@@ -139,11 +135,8 @@ const prefs = {
   motion: initialMotion,
   motionPreset: initialMotionPreset,
   quality: storedPrefs.quality ?? true,
-  superPerformance: storedPrefs.superPerformance ?? false,
-  rendering: normalizeQuality(
-    storedPrefs.rendering,
-    storedPrefs.quality !== false,
-  ),
+  superPerformance: false,
+  rendering: { ...qualityPresets.original },
   colorTheme: storedPrefs.colorTheme === "dark" ? "dark" : "light",
 };
 const motionActive = (key: MotionKey) => motionEnabled(prefs.motion, key);
@@ -205,7 +198,7 @@ function saveAudioPrefs() {
 function superPerformanceEnabled() {
   return isWallpaper
     ? wallpaperHost()?.properties.superperformance?.value === true
-    : prefs.superPerformance;
+    : false;
 }
 function effectiveRenderQuality() {
   return superPerformanceEnabled() ? superPerformanceQuality : prefs.rendering;
@@ -236,8 +229,6 @@ function savePrefs() {
     );
   scene?.setSuperPerformance(superPerformanceEnabled());
   scene?.setQuality(effectiveRenderQuality());
-  syncQualityUI(prefs.rendering);
-  updateQualitySummary();
   rollingTitles.forEach((title) =>
     title.update({
       animated: motionActive("rollingText") && mode === "archive",
@@ -294,8 +285,6 @@ function fit() {
     previousLayout = layoutKey;
     scene?.resize();
   }
-  updateQualitySummary();
-
 }
 window.addEventListener("resize", fit);
 window.visualViewport?.addEventListener("resize", fit);
@@ -477,7 +466,6 @@ function renderModal() {
   backdrop.hidden = true;
   modalTransition = new SurfaceTransition(backdrop, $(".terminal-modal"));
   modalTransition.show(!motionActive("surfaceTransitions"));
-  if (modal === "settings") updateQualitySummary();
   if (modal !== "settings") {
     renderResults();
     requestAnimationFrame(() => {
@@ -515,31 +503,11 @@ function renderResults() {
   $("#result-count").textContent =
     `${String(results.length).padStart(2, "0")} RECORDS FOUND`;
 }
-function updateQualitySummary() {
-  const summary = document.querySelector("#quality-summary");
-  if (!summary) return;
-  if (!scene) {
-    summary.textContent = "3D 已关闭 · 三维模型与渲染资源已释放";
-    return;
-  }
-  const canvas = scene.renderer.domElement;
-  const metrics = JSON.parse(
-    canvas.parentElement?.dataset.renderQuality ?? "{}",
-  );
-  summary.textContent = `${superPerformanceEnabled() ? "低负载画质 · 调整画质后应用新设置 · " : ""}实际渲染 ${canvas.width} × ${canvas.height} · ${effectiveRenderQuality().antialias === "smaa" ? "SMAA" : "原始抗锯齿"} · 纹理 ${metrics.anisotropy ?? 1}×${metrics.limited ? " · 已达到缓冲上限" : ""}`;
-}
 function settingsMarkup() {
-  return `<h2>SETTINGS<small>设置</small></h2><div class="settings-list">${audioSettingsMarkup(prefs)}</div>${qualityMarkup(prefs.rendering)}<div class="settings-bottom">${!isWallpaper && document.fullscreenEnabled ? '<button data-action="fullscreen">FULLSCREEN / 全屏 <span>↗</span></button>' : ""}</div>`;
+  return `<h2>SETTINGS<small>设置</small></h2><div class="settings-list">${audioSettingsMarkup(prefs)}</div><div class="settings-bottom">${!isWallpaper && document.fullscreenEnabled ? '<button data-action="fullscreen">FULLSCREEN / 全屏 <span>↗</span></button>' : ""}</div>`;
 }
 
 document.addEventListener("input", (e) => {
-  const slider = e.target as HTMLInputElement;
-  if (slider.dataset.quality) {
-    const output = document.querySelector<HTMLOutputElement>(
-      `[data-quality-output="${slider.dataset.quality}"]`,
-    );
-    if (output) output.value = `${slider.value}%`;
-  }
   const volume = e.target as HTMLInputElement;
   if (
     volume.dataset.volume === "musicVolume" ||
@@ -559,30 +527,11 @@ document.addEventListener("input", (e) => {
 });
 document.addEventListener("change", (e) => {
   const el = e.target as HTMLInputElement;
-  if (el.id === "quality-preset" && Object.hasOwn(qualityPresets, el.value)) {
-    prefs.superPerformance = false;
-    prefs.rendering = { ...qualityPresets[el.value as QualityPreset] };
-    savePrefs();
-  } else if (el.dataset.quality) {
-    prefs.superPerformance = false;
-    const key = el.dataset.quality as keyof RenderQuality;
-    prefs.rendering = normalizeQuality({
-      ...prefs.rendering,
-      [key]: key === "antialias" ? el.value : Number(el.value),
-    });
-    savePrefs();
-  }
   if (el.dataset.pref) {
     const key = el.dataset.pref;
-    if (
-      key === "sound" ||
-      key === "music" ||
-      key === "quality" ||
-      key === "superPerformance"
-    )
-      prefs[key] = el.checked;
-    if (key === "sound" || key === "music") saveAudioPrefs();
-    else savePrefs();
+    if (key !== "sound" && key !== "music") return;
+    prefs[key] = el.checked;
+    saveAudioPrefs();
     audio.play("confirm");
   }
 });
@@ -860,7 +809,6 @@ function releaseThree() {
   syncThreeButton();
   $("#hover-label").hidden = true;
   delete $("#three-scene").dataset.renderQuality;
-  updateQualitySummary();
 }
 async function toggleThree() {
   if (!isWallpaper || !ready || threeState === "loading") return;
