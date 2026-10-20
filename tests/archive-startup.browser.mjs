@@ -139,11 +139,7 @@ try {
           width: prose.getBoundingClientRect().width, html: prose.innerHTML };
       };
       const standalone = await context.newPage();
-      const zoom = await reader.locator('body').evaluate(node => Number(getComputedStyle(node).zoom));
-      assert.equal(zoom, legacy ? 1.125 : 1.18);
-      await standalone.setViewportSize(await reader.locator('body').evaluate(node => ({
-        width: Math.round(innerWidth / Number(getComputedStyle(node).zoom)), height: innerHeight,
-      })));
+      await standalone.setViewportSize(await reader.locator('body').evaluate(() => ({ width: innerWidth, height: innerHeight })));
       await standalone.goto(`http://archive.test/posts/${target.slug}/`);
       await standalone.evaluate(() => document.fonts.ready);
       await reader.locator('body').evaluate(() => document.fonts.ready);
@@ -152,16 +148,13 @@ try {
       assert(Math.abs(backRect.x - dimensions.x - articleLeft) < 1, 'return aligns with the article left edge');
       const embedded = await reader.locator('.prose').evaluate(typography);
       const original = await standalone.locator('.prose').evaluate(typography);
-      assert(Math.abs(embedded.width - original.width * zoom) < 1, 'the original text area is enlarged proportionally');
-      const { width: embeddedWidth, ...embeddedStyle } = embedded;
-      const { width: originalWidth, ...originalStyle } = original;
-      assert.deepEqual(embeddedStyle, originalStyle, 'original font properties, prose and SVG markup are preserved');
+      assert.deepEqual(embedded, original, 'original font properties, text width, prose and SVG markup are preserved');
       const svgSize = node => ({ width: node.getBoundingClientRect().width, height: node.getBoundingClientRect().height });
       const embeddedSvg = reader.locator('.math-visual > svg').first();
       if (await embeddedSvg.count()) {
         const a = await embeddedSvg.evaluate(svgSize);
         const b = await standalone.locator('.math-visual > svg').first().evaluate(svgSize);
-        assert(Math.abs(a.width - b.width * zoom) < 1 && Math.abs(a.height - b.height * zoom) < 1, 'math scales together with the text');
+        assert.deepEqual(a, b, 'math retains its original rendered size');
       }
       await standalone.close();
       await reader.locator('body').evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));

@@ -28,15 +28,12 @@ export class BlogReader {
       if (!doc) return;
       // Retain the original article title, prose, CSS, fonts and SVG math.
       // Hide duplicate navigation and let the original scene show through.
-      // Scale the original document uniformly, including all SVG math units.
       doc.body.style.backgroundColor = 'transparent';
       // Hide only the document scrollbar; preserve scrolling and the local
       // horizontal scroll containers used by long formulas and code blocks.
       const chromeStyle = doc.createElement('style');
       chromeStyle.textContent = `html { scrollbar-width: none; }
-        html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; }
-        body { zoom: 1.18; }
-        @media (max-width: 600px) { body { zoom: 1.125; } }`;
+        html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; }`;
       doc.head.append(chromeStyle);
       doc.querySelectorAll<HTMLElement>('.site-header, .article-meta .back-link').forEach(node => {
         node.hidden = true;
