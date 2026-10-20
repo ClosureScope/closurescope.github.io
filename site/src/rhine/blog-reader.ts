@@ -1,9 +1,13 @@
+import { SurfaceTransition } from "./ui-transitions";
+
 /** Keep the original article in its own, unscaled viewport. */
 export class BlogReader {
   private root = document.createElement('section');
   private frame = document.createElement('iframe');
   private link: HTMLAnchorElement;
   private href = '';
+  private transition: SurfaceTransition;
+  private visible = false;
 
   constructor(private back: () => void, private directory: () => void) {
     this.root.id = 'detail-ui';
@@ -41,6 +45,7 @@ export class BlogReader {
     });
     this.root.append(this.frame);
     document.body.append(this.root);
+    this.transition = new SurfaceTransition(this.root, this.root, 450, 200);
   }
 
   open(href: string, title: string) {
@@ -53,11 +58,17 @@ export class BlogReader {
     }
   }
 
-  setVisible(visible: boolean) {
-    const changed = this.root.hidden === visible;
-    this.root.hidden = !visible;
-    if (visible && changed) this.frame.focus();
+  setVisible(visible: boolean, animated = false) {
+    if (this.visible === visible) return;
+    this.visible = visible;
+    this.root.inert = !visible;
+    if (visible) {
+      this.transition.show(!animated);
+      this.frame.focus();
+    } else {
+      this.transition.hide(!animated);
+    }
   }
 
-  dispose() { this.root.remove(); }
+  dispose() { this.transition.dispose(); this.root.remove(); }
 }

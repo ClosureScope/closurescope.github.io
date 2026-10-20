@@ -15,7 +15,7 @@
     "build:posts": "node scripts/build-posts.mjs",
     "test:math": "node --test tests/math-*.test.mjs",
     "test:archive": "node --experimental-strip-types --test tests/archive-*.test.mjs",
-    "test:archive-ui": "node tests/archive-startup.browser.mjs"
+    "test:archive-ui": "node tests/archive-startup.browser.mjs && node tests/archive-scene.browser.mjs"
   },
   "dependencies": {
     "@kitlangton/rolling-number": "0.4.1",

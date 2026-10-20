@@ -1922,6 +1922,7 @@ export class ArchiveScene {
       extraction: Math.round(this.lift.value * 1000) / 1000,
       appearance: Math.round(ease(this.lift.value / 0.4) * 1000) / 1000,
       cameraDetail: Math.round(this.detail * 1000) / 1000,
+      inspecting: this.targetDetail === 1,
       idleGain: this.idleGain,
       flatten: this.flatMix,
       spectrumActivity: this.playfield.bands.activity,

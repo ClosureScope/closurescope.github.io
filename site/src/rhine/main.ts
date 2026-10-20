@@ -322,12 +322,11 @@ function setMode(next: Mode) {
     $("#hover-label").hidden = true;
   }
   mode = next;
-  // The full-page reader overlays the archive; keep its scene revealed and
-  // reset pointer state when entering or leaving the reader.
-  scene?.setMode("archive");
+  // Keep both the model extraction and its return inside the original scene.
+  scene?.setMode(next);
   audio.setScene(next);
   $("#stage").dataset.mode = next;
-  $("#stage").inert = next === "detail";
+  $("#stage").inert = false;
   workbench?.syncVisibility();
   syncWallpaperBackground();
   if (previousMode !== next) fit();
@@ -339,7 +338,7 @@ function setMode(next: Mode) {
     const record = records[selected];
     blogReader.open(record.source, record.title);
   }
-  blogReader.setVisible(next === "detail");
+  blogReader.setVisible(next === "detail", motionActive("surfaceTransitions"));
   if (previousMode === "detail" && next === "archive" && !modal)
     $(".read-file").focus({ preventScroll: true });
 }
@@ -829,12 +828,12 @@ function frame(ms: number) {
     motionIsReduced(),
     motionActive("pointerParallax"),
   );
-  if (mode === "archive") scene?.update(time);
+  scene?.update(time);
   if (threeState === "closing" && scene?.presentationHidden) releaseThree();
   playground?.position();
   $("#stage").style.setProperty(
     "--detail-shade",
-    "0",
+    String(scene?.detailVisibility ?? 0),
   );
   const currentScene = scene;
   if (currentScene)
@@ -948,7 +947,7 @@ async function toggleThree() {
     next.renderer.domElement.style.opacity = "0";
     next.setPresentationVisible(false, true);
     await next.load();
-    next.setMode("archive");
+    next.setMode(mode);
     bindScene(next, resumeSelection === selected ? resumeCell : undefined);
     next.revealImmediately();
     scene = next;

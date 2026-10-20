@@ -50,6 +50,7 @@ try {
       assert.equal(initial.startup, 'started');
       assert.equal(initial.browsing, true, 'loaded archive is revealed and accepts pointer navigation');
       assert.equal(initial.reveal, 1);
+      assert.equal(initial.inspecting, false);
       assert.equal(initial.audio.scene, 'archive');
       assert.equal(initial.audio.preferences.sound, true);
       assert.equal(initial.audio.preferences.music, true);
@@ -107,6 +108,7 @@ try {
       await page.locator('.result-row').last().click();
       await page.waitForFunction(slug => window.rhine.stats().selected === slug && window.rhine.stats().mode === 'detail', target.slug);
       assert.equal(await page.evaluate(() => window.rhine.stats().mode), 'detail');
+      assert.equal(await page.evaluate(() => window.rhine.stats().inspecting), true, 'reading requests the original model extraction');
       assert.equal(await page.locator('[data-action="bookmark"], .detail-kicker, #object-id, .detail-footnote > span').count(), 0);
       assert(!/SAVE ARCHIVE|REMOVE FROM SAVED|FILE X-|NO\.\d/.test(await page.locator('#detail-ui').textContent()));
       assert.equal(await page.locator('.detail-tabs, .metadata, .object-caption, .detail-actions, .detail-footnote').count(), 0);
@@ -114,8 +116,11 @@ try {
       await page.locator('.blog-reader').waitFor({ state: 'visible' });
       const dimensions = await page.locator('.blog-reader').boundingBox();
       const viewport = page.viewportSize();
-      assert(dimensions.width >= viewport.width * .98, 'reader uses full viewport width');
-      assert(dimensions.height >= viewport.height * .85, 'reader fills the available reading height');
+      assert(dimensions.width >= viewport.width * (legacy ? .9 : .58), 'reader preserves a generous reading width');
+      assert(dimensions.height >= viewport.height * (legacy ? .5 : .7), 'reader uses the height freed by removing detail metadata');
+      const panel = await page.locator('.reading-view').boundingBox();
+      assert(legacy ? panel.y >= viewport.height * .33 : panel.x >= viewport.width * .33, 'the model remains visible beside or above the reader');
+      assert(dimensions.x >= 0 && dimensions.x + dimensions.width <= viewport.width, 'reader fits inside the viewport');
       const reader = page.frameLocator('.blog-reader');
       await reader.locator('.prose').waitFor();
       await reader.locator('.site-header').waitFor({ state: 'hidden' });
@@ -126,6 +131,7 @@ try {
           width: prose.getBoundingClientRect().width, html: prose.innerHTML };
       };
       const standalone = await context.newPage();
+      await standalone.setViewportSize(await reader.locator('body').evaluate(() => ({ width: innerWidth, height: innerHeight })));
       await standalone.goto(`http://archive.test/posts/${target.slug}/`);
       await standalone.evaluate(() => document.fonts.ready);
       await reader.locator('body').evaluate(() => document.fonts.ready);
