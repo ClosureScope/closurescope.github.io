@@ -4,7 +4,6 @@ import { SurfaceTransition } from "./ui-transitions";
 export class BlogReader {
   private root = document.createElement('section');
   private frame = document.createElement('iframe');
-  private link: HTMLAnchorElement;
   private href = '';
   private transition: SurfaceTransition;
   private visible = false;
@@ -16,9 +15,7 @@ export class BlogReader {
     this.root.hidden = true;
     this.root.innerHTML = `<nav class="reading-toolbar" aria-label="阅读导航">
       <button type="button" data-reader="back" aria-label="返回文章选择">← <span>返回</span></button>
-      <div class="reading-tools"><a class="reading-standalone" target="_top">独立阅读 ↗</a></div>
     </nav>`;
-    this.link = this.root.querySelector<HTMLAnchorElement>('.reading-standalone')!;
     this.root.querySelector('[data-reader="back"]')!.addEventListener('click', this.back);
     this.frame.className = 'blog-reader';
     this.frame.addEventListener('load', () => {
@@ -50,8 +47,6 @@ export class BlogReader {
 
   open(href: string, title: string) {
     this.frame.title = title;
-    this.link.href = href;
-    this.link.setAttribute('aria-label', `独立阅读 ${title}`);
     if (this.href !== href) {
       this.href = href;
       this.frame.src = href;
