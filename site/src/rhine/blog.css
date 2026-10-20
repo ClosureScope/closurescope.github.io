@@ -11,6 +11,8 @@
 #empty-archive { padding: 10vh 8vw; }
 #empty-archive[hidden] { display: none; }
 noscript { position: fixed; inset: 0; background: #e8e5e1; padding: 32px; overflow: auto; z-index: 100; }
+.archive-loading { position: fixed; right: 24px; bottom: 58px; z-index: 12; font-size: 11px; letter-spacing: 1px; color: #726f67; }
+.archive-loading button { color: inherit; text-decoration: underline; padding: 8px; }
 @media (max-width: 700px) {
   .blog-reader-slot { height: 45vh; }
 }

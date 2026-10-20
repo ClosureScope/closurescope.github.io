@@ -1,4 +1,3 @@
-import { hasTypingBetween } from "./typing-rhythm";
 import { TYPING_PCM, TYPING_SAMPLE_RATE } from "./typing-samples";
 import { assetUrl } from "./asset-url";
 export type Sound =
@@ -19,7 +18,7 @@ export type Sound =
   | "inspect"
   | "explode"
   | "assemble";
-export type SoundScene = "boot" | "archive" | "detail" | "viewer";
+export type SoundScene = "archive" | "detail" | "viewer";
 export type AudioPreferences = {
   sound: boolean;
   music: boolean;
@@ -71,19 +70,6 @@ export const rampLevel = (
   }
   param.linearRampToValueAtTime(value, now + seconds);
 };
-export const BOOT_CUES: readonly { time: number; sound: Sound }[] = [
-  { time: 9.16, sound: "brand" },
-  { time: 11.84, sound: "confirm" },
-  { time: 19.48, sound: "scan" },
-  { time: 21.84, sound: "confirm" },
-  { time: 22.76, sound: "welcome" },
-  { time: 23.52, sound: "text-reveal" },
-  { time: 25.04, sound: "text-reveal" },
-  { time: 26.92, sound: "array" },
-  { time: 30.68, sound: "open" },
-  { time: 34.3, sound: "inspect" },
-];
-
 /** Shared by live playback and OfflineAudioContext verification. */
 export function synthesizeSound(
   c: BaseAudioContext,
@@ -326,18 +312,15 @@ export class TerminalAudio {
   private tracks: AudioBufferSourceNode[] = [];
   private voices: ReturnType<typeof synthesizeSound>[] = [];
   private lastSound = new Map<Sound, number>();
-  private scene: SoundScene = "boot";
+  private scene: SoundScene = "archive";
   private offset = 0;
   private startedAt = 0;
   private unlocked = false;
   private disposed = false;
-  private bootTime: number | null = null;
   private error = "";
   private requestId = 0;
   private suspension: Promise<void> = Promise.resolve();
-  private bootMix = -1;
   private playedKeys = 0;
-  private entryPending = false;
   private hostPaused = false;
   setHostPaused(paused: boolean) {
     this.hostPaused = paused;
@@ -352,26 +335,15 @@ export class TerminalAudio {
     window.addEventListener("pageshow", this.visibility);
   }
   private gesture = () => {
-    if (this.entryPending) return;
     this.unlocked = true;
     void this.activate();
   };
-  holdForEntry() {
-    this.entryPending = true;
-  }
-  releaseEntry() {
-    this.entryPending = false;
-  }
-  cancelEntry() {
-    this.hide();
-  }
   async unlock() {
     this.unlocked = true;
     await this.activate();
     return this.context?.state === "running" && (!this.prefs.music || Boolean(this.buffers));
   }
-  // Fetch compressed tracks while the entry screen is visible; create/resume
-  // the audio device only from a real click or keyboard activation.
+  // Load music on a normal pointer or keyboard interaction, without an entry screen.
   prepareMusic() {
     if (this.musicData) return Promise.resolve(this.musicData);
     this.fetching ??= Promise.all(STEMS.map(async name => {
@@ -385,11 +357,6 @@ export class TerminalAudio {
     })).then(data => this.musicData = data).finally(() => { this.fetching = undefined; });
     return this.fetching;
   }
-  restartBoot() {
-    this.stopEffects();
-    this.bootTime = 6.76;
-    this.bootMix = -1;
-  }
   private hide = () => {
     this.requestId++;
     this.stopMusic();
@@ -398,9 +365,8 @@ export class TerminalAudio {
       this.context?.suspend().catch(() => {}) ?? Promise.resolve();
   };
   private visibility = () => {
-    this.bootTime = null;
     if (document.hidden) this.hide();
-    else if (this.unlocked && !this.entryPending) void this.activate();
+    else if (this.unlocked) void this.activate();
   };
   configure(prefs: AudioPreferences) {
     this.prefs = {
@@ -425,7 +391,7 @@ export class TerminalAudio {
     if (!this.prefs.sound) this.stopEffects();
     if (!this.prefs.music) this.stopMusic();
     if (!this.prefs.sound && !this.prefs.music) this.hide();
-    else if (this.unlocked && !this.entryPending) void this.activate();
+    else if (this.unlocked) void this.activate();
   }
   private createContext() {
     const c = (this.context = new AudioContext()),
@@ -557,15 +523,12 @@ export class TerminalAudio {
   setScene(scene: SoundScene) {
     if (this.scene === scene) return;
     this.scene = scene;
-    this.bootTime = null;
-    this.bootMix = -1;
     this.stopEffects();
     this.mixScene();
   }
   private mixScene() {
     if (!this.context) return;
     const gains = {
-      boot: [0.48, 0.32, 0.18],
       archive: [0.9, 0.72, 0.65],
       detail: [0.72, 0.36, 0.12],
       viewer: [0.8, 0.24, 0.28],
@@ -610,36 +573,6 @@ export class TerminalAudio {
       rampLevel(this.duck!.gain, 0.65, now, 0.035);
       this.duck!.gain.linearRampToValueAtTime(1, now + 0.9);
     }
-  }
-  updateBoot(appTime: number, frozen = false) {
-    const time = appTime + 5;
-    const previous = this.bootTime;
-    this.bootTime = time;
-    const phase = time < 22.76 ? 0 : time < 26.92 ? 1 : time < 34.3 ? 2 : 3;
-    if (phase !== this.bootMix && this.context) {
-      this.bootMix = phase;
-      const gains = [
-        [0.48, 0.32, 0.18],
-        [0.68, 0.55, 0.32],
-        [0.9, 0.72, 0.65],
-        [0.72, 0.36, 0.12],
-      ][phase];
-      this.stemGains.forEach((g, i) =>
-        rampLevel(g.gain, gains[i], this.context!.currentTime, 0.9),
-      );
-    }
-    if (
-      frozen ||
-      previous === null ||
-      time < previous ||
-      time - previous > 0.3
-    ) {
-      this.stopEffects();
-      return;
-    }
-    for (const cue of BOOT_CUES)
-      if (cue.time > previous && cue.time <= time) this.play(cue.sound);
-    if (hasTypingBetween(previous, time)) this.play("key");
   }
   stats() {
     return {

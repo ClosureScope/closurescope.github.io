@@ -1,6 +1,6 @@
 # RhineLabUI 博客界面
 
-首页移植自 [LBEILC/RhineLabUI](https://github.com/LBEILC/RhineLabUI)，保留原有开场、三维阵列、玻璃档案抽取、解密、模型查看器、检索、收藏、声音与画质设置。上游源码在 `site/src/rhine/`，资源在 `site/public/rhine/`，原项目 MIT 许可证、字体与声音来源说明一同保留。首阶段不接入上游 PWA 与壁纸宿主功能。
+首页移植自 [LBEILC/RhineLabUI](https://github.com/LBEILC/RhineLabUI)，保留三维阵列、玻璃档案抽取、解密、模型查看器、检索、收藏、声音与画质设置。访问网站后直接进入文章选择界面；开屏动画、进入确认、重播入口及开场动效选项已删除。模型加载期间只显示简短状态提示，声音在首次正常点击或按键时按浏览器策略解锁，不阻挡文章浏览。上游源码在 `site/src/rhine/`，资源在 `site/public/rhine/`，原项目 MIT 许可证、字体与声音来源说明一同保留。首阶段不接入上游 PWA 与壁纸宿主功能。
 
 ## 写文章
 
@@ -34,6 +34,7 @@ iframe 放在未缩放的浏览器坐标层，跟随原文档区域定位。这�
 pnpm test:archive
 pnpm build
 pnpm test:math
+pnpm test:archive-ui
 ```
 
-`test:archive` 覆盖不同列长、七列、单篇栏目、四十篇栏目、反向循环和长期滚动坐标重置。数学回归测试仍使用原有测试。
+`test:archive` 覆盖不同列长、七列、单篇栏目、四十篇栏目、反向循环、长期滚动坐标重置及旧版动效设置迁移。`test:archive-ui` 使用生产构建检查桌面与手机直接进入文章选择界面、旧设置兼容、动效切换和文章导航；它不启动或停止开发服务器。数学回归测试仍使用原有测试。

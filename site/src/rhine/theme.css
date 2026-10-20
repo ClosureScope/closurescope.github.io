@@ -6,10 +6,9 @@
 .theme-choices button[aria-pressed="true"] { background: #171713; color: #ece9e4; }
 
 [data-dark-surface="true"] { color-scheme: dark; color: var(--theme-ink); background: var(--theme-paper); }
-[data-dark-surface="true"] :is(#viewport, #stage, .model-viewer, .boot-white) { background: var(--theme-paper); color: var(--theme-ink); }
+[data-dark-surface="true"] :is(#viewport, #stage, .model-viewer) { background: var(--theme-paper); color: var(--theme-ink); }
 [data-dark-surface="true"] :is(.brand, .powered, .workbench, .system-nav, .system-footer, .archive-ui, .detail-ui, .terminal-modal, .relay-entry, .relay-hud, .relay-target) { color: var(--theme-ink); }
 [data-dark-surface="true"] .scene-atmosphere { background: linear-gradient(180deg, var(--theme-paper), rgba(var(--theme-paper-rgb), .82) 11%, transparent 40%), linear-gradient(0deg, rgba(var(--theme-paper-rgb), .94), transparent 19%), radial-gradient(ellipse at 48% 48%, transparent 35%, rgba(var(--theme-paper-rgb), .38) 85%); }
-[data-dark-surface="true"] .boot-background { background: radial-gradient(ellipse at 51% 48%, var(--theme-panel), var(--theme-paper) 76%); }
 [data-dark-surface="true"] :is(.terminal-modal, .viewer-loading, .toast) { background: var(--theme-panel); color: var(--theme-ink); box-shadow: 0 26px 95px #0003; border-color: var(--theme-line); }
 [data-dark-surface="true"] .modal-backdrop { background: rgba(var(--theme-paper-rgb), .6); }
 [data-dark-surface="true"] :is(.wallpaper-settings-note, .quality-cycle, .wb-cover, .relay-actions button, .relay-target) { background: var(--theme-field); color: var(--theme-ink); border-color: var(--theme-line); }
@@ -35,12 +34,6 @@
 [data-dark-surface="true"] .motion-setting input:focus-visible + .toggle { outline-color: var(--theme-accent); }
 [data-dark-surface="true"] .relay-target:hover { background: var(--theme-ink); color: var(--theme-paper); }
 [data-dark-surface="true"] .relay-target { box-shadow: 0 0 0 5px rgba(var(--theme-paper-rgb), .35); }
-[data-dark-surface="true"] :is(.boot-logo, .welcome-logo) svg text { fill: currentColor; }
-[data-dark-surface="true"] .scan [stroke="#080a08"] { stroke: var(--theme-ink); }
-[data-dark-surface="true"] .scan [stroke="#fff"] { stroke: var(--theme-line); }
-[data-dark-surface="true"] .scan .scan-core { fill: var(--theme-ink); }
-[data-dark-surface="true"] .welcome-panel { background: var(--theme-panel); }
-[data-dark-surface="true"] .welcome-company strong { background: var(--theme-ink); color: var(--theme-paper); }
 [data-dark-surface="true"] :is(#inspection-marks, .inspection-overlay) { color: var(--theme-ink); }
 [data-dark-surface="true"] :is(.back-button, .viewer-back, .viewer-reset, .viewer-index, .viewer-parts, .file-title, .file-open, .read-file, .column-navigation, .archive-counter) { color: var(--theme-ink); }
 @media(max-width: 700px) { .theme-settings { align-items: flex-start; }.theme-choices button { min-width: 58px; } }
@@ -55,12 +48,6 @@
 [data-dark-surface="true"] :is(.detail-rule, .solid-button) { background: var(--theme-ink); color: var(--theme-paper); }
 [data-dark-surface="true"] .solid-button > span { color: inherit; }
 [data-dark-surface="true"] :is(.audio-volume input, .quality-range input) { accent-color: var(--theme-accent); }
-[data-dark-surface="true"] :is(.boot, .access-text, .boot-logo, .auth-status, .scan, .welcome-logo, .welcome-database) { color: var(--theme-ink); }
-[data-dark-surface="true"] .scan [fill="#080a08"] { fill: var(--theme-ink); }
-[data-dark-surface="true"] .scan [fill="#fff"] { fill: var(--theme-line); }
-[data-dark-surface="true"] .boot-background [stroke="#fff"] { stroke: var(--theme-line); }
-[data-dark-surface="true"] .welcome-company strong { background: transparent; color: var(--theme-ink); }
-[data-dark-surface="true"] .welcome-company .welcome-highlight { background: var(--theme-ink); color: var(--theme-paper); }
 [data-dark-surface="true"] .viewer-surface button { color: var(--theme-muted); }
 [data-dark-surface="true"] .viewer-surface button[aria-pressed="true"] { color: var(--theme-paper); }
 /* Dark edges need a visible slate haze, not only black attenuation. */
