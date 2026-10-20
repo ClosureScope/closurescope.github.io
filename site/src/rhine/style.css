@@ -880,7 +880,7 @@ button {
 .result-header,
 .result-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 230px 175px;
+  grid-template-columns: minmax(0, 1fr) 230px;
   padding-right: 7px;
 }
 .result-header {
@@ -938,24 +938,6 @@ button {
 .result-row > span:nth-child(2) {
   font-size: 12px;
   color: #7d7565;
-}
-.result-row > span:last-child {
-  font-size: 9px;
-  letter-spacing: 0.5px;
-  color: #6b6d54;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding-right: 30px;
-  line-height: 1;
-}
-.result-row > span:last-child > i {
-  font-size: 24px;
-  flex: 0 0 24px;
-  line-height: 1;
-  font-style: normal;
-  color: #343a29;
 }
 .modal-bottom {
   position: absolute;

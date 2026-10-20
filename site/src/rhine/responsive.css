@@ -112,7 +112,6 @@
 :is([data-layout="compact"], [data-layout="portrait"]) .category-filters { gap: 4px 18px; padding: 12px 0; flex-wrap: wrap; }
 :is([data-layout="compact"], [data-layout="portrait"]) .category-filters button { min-height: 44px; font-size: 12px; }
 :is([data-layout="compact"], [data-layout="portrait"]) :is(.result-header, .result-row) { grid-template-columns: minmax(0, 1fr) 100px; }
-:is([data-layout="compact"], [data-layout="portrait"]) :is(.result-header, .result-row) > span:last-child { display: none; }
 :is([data-layout="compact"], [data-layout="portrait"]) .result-name { gap: 10px; padding-right: 12px; font-size: 14px; }
 :is([data-layout="compact"], [data-layout="portrait"]) .search-results { height: auto; overflow: visible; }
 :is([data-layout="compact"], [data-layout="portrait"]) .modal-bottom { position: static; margin-top: 22px; gap: 12px; font-size: 8px; flex-wrap: wrap; }
