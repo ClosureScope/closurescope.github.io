@@ -31,7 +31,7 @@ pnpm dev
 
 ```bash
 mkdir -p posts/Optimization
-cp posts/"Reinforcement Learning"/value-iteration.typ posts/Optimization/least-squares.typ
+cp posts/RL/value-iteration.typ posts/Optimization/least-squares.typ
 ```
 
 然后在这个 `.typ` 中修改 `title` 和正文。分类直接使用 `posts/` 下的文件夹名，不需要在文章中填写，也不需要维护分类名单。文件名必须在所有分类中唯一，以保持文章 URL 稳定。

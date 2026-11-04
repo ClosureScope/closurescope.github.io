@@ -5,25 +5,25 @@
 
 = Bellman Expectation Equation
 #definition[Value Function][
-  $ V^pi (s_0) = EE_(tau) [G(tau) | s_0] = EE_(tau)[sum_(t=0)^infinity gamma^t R_t | s_0] $
+  $ V^pi (s_0) = EE_(tau) [G (tau) | s_0] = EE_(tau) [sum_(t=0)^infinity gamma^t r_t | s_0] $
 ]
 Rewrite $V^pi (s_0)$ in a recursive way.
 
 $
-  V^pi (s_0) & = EE_(a_0)[ EE_(s_1) [EE_(tau_1)[R(s_0, a_0) + gamma sum_(t=1)^infinity gamma^(t-1) R_t | s_0, a_0, s_1] | s_0, a_0] | s_0] \
-  & = EE_(a_0)[R(s_0, a_0) + gamma EE_(s_1) [EE_(tau_1) [G(tau_1) | s_1] | s_0, a_0] | s_0] \
-  & = EE_(a_0)[R(s_0, a_0) + gamma EE_(s_1) [V^pi (s_1) | s_0, a_0] | s_0]\
-  & = EE_(a_0)[R(s_0, a_0) + gamma EE_(s_1) [V^pi (s_1)] | s_0]
+  V^pi (s_0) & = EE_(a_0) [ EE_(s_1) [EE_(tau_1) [r (s_0, a_0) + gamma sum_(t=1)^infinity gamma^(t-1) r_t | s_0, a_0, s_1] | s_0, a_0] | s_0] \
+  & = EE_(a_0) [r (s_0, a_0) + gamma EE_(s_1) [EE_(tau_1) [G (tau_1) | s_1] | s_0, a_0] | s_0] \
+  & = EE_(a_0) [r (s_0, a_0) + gamma EE_(s_1) [V^pi (s_1) | s_0, a_0] | s_0]\
+  & = EE_(a_0) [r (s_0, a_0) + gamma EE_(s_1) [V^pi (s_1)] | s_0]
 $
 
 We thus derive
 #theorem[Bellman Expectation Equation][
-  $ V^pi (s_0) = EE_(a_0)[R(s_0, a_0) + gamma EE_(s_1) [V^pi (s_1)] | s_0] $
+  $ V^pi (s_0) = EE_(a_0) [r (s_0, a_0) + gamma EE_(s_1) [V^pi (s_1)] | s_0] $
 ]
 = Policy Evaluation
 == Bellman Expectation Operator and Contraction Property
 #definition[Bellman Expectation Operator][
-  $ (T^pi V)(s) = EE_a [R(s,a) + gamma EE_(s^') [V(s^')]] $
+  $ (T^pi V) (s) = EE_a [r (s,a) + gamma EE_(s^') [V (s^')]] $
 ]
 #proposition[Contraction Property][
   $ norm(T^pi V - T^pi W)_infinity <= gamma norm(V - W)_infinity $
@@ -32,8 +32,8 @@ We thus derive
 #proof[Contraction Property][
 
   $
-    abs((T^pi V)(s) - (T^pi W)(s)) & = gamma abs(EE_a [EE_(s^') [V(s^') - W(s^')]]) \
-                                   & <= gamma EE_a [EE_(s^') [abs(V(s^') - W(s^'))]] \
+    abs((T^pi V) (s) - (T^pi W) (s)) & = gamma abs(EE_a [EE_(s^') [V (s^') - W(s^')]]) \
+                                   & <= gamma EE_a [EE_(s^') [abs(V (s^') - W(s^'))]] \
                                    & <= gamma norm(V - W)_infinity
   $
 
@@ -112,7 +112,7 @@ policy has not yet been established
   $
     V^* (s)
     = max_(a in cal(A)) (
-      R(s, a) + gamma EE_(s^') [V^* (s^')]
+      r (s, a) + gamma EE_(s^') [V^* (s^')]
     )
   $
 ]
@@ -124,9 +124,9 @@ We will leave the proof in the next section.
 
 #definition[Bellman Optimality Operator][
   $
-    (T^* V)(s)
+    (T^* V) (s)
     = max_(a in cal(A)) (
-      R(s, a) + gamma EE_(s^') [V(s^')]
+      r (s, a) + gamma EE_(s^') [V (s^')]
     )
   $
 ]
@@ -149,10 +149,10 @@ We will leave the proof in the next section.
 
 
   $
-    abs((T^* V)(s) - (T^* W)(s)) & <= gamma max_(a in cal(A))
-                                   abs(EE_(s^') [V(s^') - W(s^')]) \
+    abs((T^* V) (s) - (T^* W) (s)) & <= gamma max_(a in cal(A))
+                                   abs(EE_(s^') [V (s^') - W(s^')]) \
                                  & <= gamma max_(a in cal(A))
-                                   EE_(s^') [abs(V(s^') - W(s^'))] \
+                                   EE_(s^') [abs(V (s^') - W(s^'))] \
                                  & <= gamma norm(V - W)_infinity
   $
 
@@ -189,16 +189,16 @@ with the optimal value function $V^*$.
 
   $
     pi (s) in "argmax"_(a in cal(A)) (
-      R(s, a) + gamma EE_(s^') [V(s^')]
+      r (s, a) + gamma EE_(s^') [V (s^')]
     )
   $
 
   Such policy exists since the action space is finite so that the maximum
   is attained in every state. Thus
   $
-    (T^pi V)(s) & = R(s, pi(s)) + gamma EE_(s^') [V(s^')]
-                  = (T^* V)(s)
-                  = V(s)
+    (T^pi V) (s) & = r (s, pi (s)) + gamma EE_(s^') [V (s^')]
+                  = (T^* V) (s)
+                  = V (s)
   $
 
 
@@ -219,15 +219,15 @@ with the optimal value function $V^*$.
   Since $V = T^* V$, for every state $s$ and action $a$,
 
   $
-    V(s) >= R(s, a) + gamma EE_(s^') [V(s^')]
+    V (s) >= r (s, a) + gamma EE_(s^') [V (s^')]
   $
 
   Consider an arbitrary admissible policy $mu in cal(M)$. Apply the inequality recursively at each step.
 
   $
-    V(s_0) >= EE_(tau) [
-      sum_(t=0)^(n-1) gamma^t R_t
-      + gamma^n V(s_n)
+    V (s_0) >= EE_(tau) [
+      sum_(t=0)^(n-1) gamma^t r_t
+      + gamma^n V (s_n)
     ]
   $
 
@@ -235,14 +235,14 @@ with the optimal value function $V^*$.
   Taking the limit as $n -> infinity$ gives
 
   $
-    V(s_0) & >= EE_(tau) [G(tau) | s_0]
+    V (s_0) & >= EE_(tau) [G (tau) | s_0]
              = V^mu (s_0)
   $
 
   Since this holds for every admissible policy,
 
   $
-    V(s) >= sup_(mu in cal(M)) V^mu (s)
+    V (s) >= sup_(mu in cal(M)) V^mu (s)
     = V^* (s)
   $
 ]

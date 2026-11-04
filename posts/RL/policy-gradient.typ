@@ -8,8 +8,8 @@
 Consider a parameterized stochastic policy $ pi_theta (a | s) $
 
 The goal of policy optimization is to maximize the expected return of the policy. Suppose the initial state is fixed as $s_0$. We define the objective function
-$ J(theta) := V^(pi_theta ) (s_0) = EE_tau [G(tau) | s_0] $
-To maximize $J(theta)$, it is necessary to compute $ nabla_theta J(theta) $
+$ J (theta) := V^(pi_theta ) (s_0) = EE_tau [G (tau) | s_0] $
+To maximize $J (theta)$, it is necessary to compute $ nabla_theta J (theta) $
 
 
 == Trajectory Probability
@@ -34,20 +34,20 @@ $
 Hence,
 
 $
-  J(theta)
+  J (theta)
   =
   sum_tau
   P_theta (tau | s_0)
-  G(tau)
+  G (tau)
 $
 
 Differentiating with respect to $theta$,
 
 $
-  nabla_theta J(theta)
+  nabla_theta J (theta)
   =
   sum_tau
-  G(tau)
+  G (tau)
   nabla_theta P_theta (tau | s_0)
 $
 
@@ -70,21 +70,21 @@ $
 we obtain
 
 $
-  nabla_theta J(theta)
+  nabla_theta J (theta)
   =
   sum_tau
   P_theta (tau | s_0)
-  G(tau)
+  G (tau)
   nabla_theta log P_theta (tau | s_0)
 $
 
 Therefore,
 
 $
-  nabla_theta J(theta)
+  nabla_theta J (theta)
   =
   EE_(tau) [
-    G(tau)
+    G (tau)
     nabla_theta log P_theta (tau | s_0)
   ]
 $
@@ -132,10 +132,10 @@ $
 Substituting this back,
 
 $
-  nabla_theta J(theta)
+  nabla_theta J (theta)
   =
   EE_tau [
-    G(tau)
+    G (tau)
     sum_(t=0)^(T-1)
     nabla_theta
     log pi_theta (a_t | s_t)
@@ -148,10 +148,10 @@ Only the policy must be differentiable with respect to $theta$
 == Reward-to-Go
 We now show that the rewards before time $t$ have zero expected contribution.
 $
-  nabla_theta J(theta)
+  nabla_theta J (theta)
   =
   sum_(t=0)^(T-1) EE_tau [
-    G(tau)
+    G (tau)
     nabla_theta
     log pi_theta (a_t | s_t)
   ]
@@ -159,11 +159,11 @@ $
 For a fixed $t$, write
 
 $
-  G(tau)
+  G (tau)
   =
-  sum_(k=0)^(t-1) gamma^k R_k
+  sum_(k=0)^(t-1) gamma^k r_k
   +
-  sum_(k=t)^(T-1) gamma^k R_k
+  sum_(k=t)^(T-1) gamma^k r_k
 $
 
 Let $tau_t$ denote the suffix of $tau$ starting with $(s_t, a_t)$, so
@@ -171,10 +171,10 @@ $tau_0 = tau$.
 Its return is
 
 $
-  G(tau_t)
+  G (tau_t)
   :=
   sum_(k=t)^(T-1)
-  gamma^(k-t) R_k
+  gamma^(k-t) r_k
 $
 
 Let $tau_(< t)$ denote the trajectory prefix before sampling $a_t$:
@@ -188,13 +188,13 @@ $
 
 $
   EE_tau [
-    G(tau)
+    G (tau)
     nabla_theta
     log pi_theta (a_t | s_t)
   ] & =
       EE_tau [
         (
-          sum_(k=0)^(t-1) gamma^k R_k
+          sum_(k=0)^(t-1) gamma^k r_k
         )
         nabla_theta
         log pi_theta (a_t | s_t)
@@ -202,7 +202,7 @@ $
     & +
       EE_tau [
         (
-          sum_(k=t)^(T-1) gamma^k R_k
+          sum_(k=t)^(T-1) gamma^k r_k
         )
         nabla_theta
         log pi_theta (a_t | s_t)
@@ -213,7 +213,7 @@ We now show the first term is $0$.
 $
   EE_tau [
     (
-      sum_(k=0)^(t-1) gamma^k R_k
+      sum_(k=0)^(t-1) gamma^k r_k
     )
     nabla_theta
     log pi_theta (a_t | s_t)
@@ -221,7 +221,7 @@ $
   =
   EE_(tau_(< t)) [
     (
-      sum_(k=0)^(t-1) gamma^k R_k
+      sum_(k=0)^(t-1) gamma^k r_k
     )
     EE_(a_t) [
       nabla_theta
@@ -264,7 +264,7 @@ Therefore,
 $
   EE_tau [
     (
-      sum_(k=0)^(t-1) gamma^k R_k
+      sum_(k=0)^(t-1) gamma^k r_k
     )
     nabla_theta
     log pi_theta (a_t | s_t)
@@ -277,13 +277,13 @@ Thus,
 
 $
   EE_tau [
-    G(tau)
+    G (tau)
     nabla_theta
     log pi_theta (a_t | s_t)
   ] & =
       EE_tau [
         (
-          sum_(k=t)^(T-1) gamma^k R_k
+          sum_(k=t)^(T-1) gamma^k r_k
         )
         nabla_theta
         log pi_theta (a_t | s_t)
@@ -291,19 +291,19 @@ $
     & =
       EE_tau [
         gamma^t
-        G(tau_t)
+        G (tau_t)
         nabla_theta
         log pi_theta (a_t | s_t)
       ]
 $
 
 $
-  nabla_theta J(theta)
+  nabla_theta J (theta)
   =
   EE_tau [
     sum_(t=0)^(T-1)
     gamma^t
-    G(tau_t)
+    G (tau_t)
     nabla_theta
     log pi_theta (a_t | s_t)
   ]
@@ -320,7 +320,7 @@ $
   Q^(pi_theta) (s, a)
   =
   EE_(tau) [
-    G(tau)
+    G (tau)
     |
     s_0, a_0
   ]
@@ -330,11 +330,11 @@ Using the law of total expectation,
 
 $
   EE_(tau) [
-    G(tau_t)
+    G (tau_t)
     nabla_theta
     log pi_theta (a_t | s_t)
   ] & =
-      EE_(s_t, a_t) [EE_(tau) [ G(tau_t)
+      EE_(s_t, a_t) [EE_(tau) [ G (tau_t)
           nabla_theta
           log pi_theta (a_t | s_t) | s_t, a_t] ] \
     & =
@@ -346,7 +346,7 @@ $
 $
 
 $
-  nabla_theta J(theta)
+  nabla_theta J (theta)
   =
   sum_(t=0)^(T-1)
   gamma^t
@@ -369,7 +369,7 @@ $
 
 
 $
-  nabla_theta J(theta) & =
+  nabla_theta J (theta) & =
                          sum_(t=0)^(T-1)
                          gamma^t
                          sum_s P(s_t = s) sum_a pi_theta (a | s)
@@ -387,7 +387,7 @@ $
 $
 
 #theorem[Policy Gradient Theorem][ $
-  nabla_theta J(theta)=
+  nabla_theta J (theta)=
   sum_s
   d_gamma^(pi_theta) (s)
   sum_a
@@ -442,7 +442,7 @@ $]
 From the previous result,
 
 $
-  nabla_theta J(theta)
+  nabla_theta J (theta)
   =
   sum_(t=0)^(T-1)
   gamma^t
@@ -474,7 +474,7 @@ $
 We obtain
 
 $
-  nabla_theta J(theta)
+  nabla_theta J (theta)
   =
   sum_(t=0)^(T-1)
   gamma^t
@@ -492,7 +492,7 @@ This is the form commonly used in actor-critic methods.
 The term
 
 $
-  A^(pi_theta )(s, a)
+  A^(pi_theta ) (s, a)
   nabla_theta
   log pi_theta (a | s)
 $
@@ -501,11 +501,11 @@ has a simple interpretation.
 
 $nabla_theta log pi_theta (a | s)$ points in the direction of the steepest increase of $log pi_theta (a | s)$.
 
-If $A^(pi_theta )(s, a) > 0$,
+If $A^(pi_theta ) (s, a) > 0$,
 
 then action $a$ performs better than the policy's average behavior at state
 $s$. Therefore, the update increases $pi_theta (a | s)$.
 
-If $A^(pi_theta )(s, a) < 0$,
+If $A^(pi_theta ) (s, a) < 0$,
 
 then the action $a$ performs worse than average, so the update decreases $pi_theta (a | s)$.
