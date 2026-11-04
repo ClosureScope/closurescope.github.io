@@ -53,7 +53,7 @@ $ delta_t = y_t - V(s_t) $
 $ y_t = r(s_t, a_t) + gamma V (s_(t+1)) $
 
 
-= DQN (Deep Q-Networks)
+= Deep Q-Network (DQN)
 
 The above methods can only apply to finite state spaces, where $Q: cal(S) times cal(A) -> RR$ is a discrete mapping i.e. a vector. In the case of an infinite state space and a finite action space, $Q: cal(S) times cal(A) -> RR$ is a continuous mapping i.e. a function. Instead of using a table as the $Q$ vector, we now use a neural network as the $Q$ function.
 $ L(theta) = 1/2 delta_t^2 $
