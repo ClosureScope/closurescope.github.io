@@ -21,11 +21,11 @@ Here $delta_t$ is the TD error, where $y_t$ is the target and $Q(s_t, a_t)$ is t
 
 There is an another approach to understanding the method. The above iteration is equivalent to minimizing the loss function
 
-$ L = 1/2 delta_t^2 = 1/2 (r(s_t, a_t) + gamma max_(a_(t+1)) Q (s_(t+1),a_(t+1)) - Q(s_t, a_t))^2 $
+$ L(Q) = 1/2 delta_t^2 $
 
 Then we use gradient descent. Note that we freeze $y_t$ during backpropogation, treating it as a constant target.
-$ nabla_Q L = -delta_t $
-$ Q (s_t,a_t) arrow.l Q (s_t,a_t) - alpha nabla_Q L = Q (s_t,a_t) + alpha delta_t $
+$ nabla_Q L(Q) = -delta_t $
+$ Q (s_t,a_t) arrow.l Q (s_t,a_t) - alpha nabla_Q L(Q) = Q (s_t,a_t) + alpha delta_t $
 
 The loss function is intuitively meaningful because it is exactly Bellman error i.e. the difference between the left side and the right side of Bellman Optimality Equation. Bellman error reflects whether our policy is good or bad. When Bellman error equals to $0$, the policy is optimal.
 
@@ -44,15 +44,22 @@ This means SARSA is *on-policy* while Q-learning is *off-policy*.
 
 SARSA can alse be used to find the optimal policy. For example, we can use SARSA to evaluate the $epsilon$-greedy policy and gradually decrease $epsilon$ to $0$.
 
-= Temporal-Difference Learning
-Temporal-difference learning is very similar to SARSA except it uses $V$. Like SARSA, temporal-difference learning is used to evaluate a policy. For example, TD(0) uses a one-step target:
-
-
-$ V (s_t) arrow.l V (s_t) + alpha delta_t $
+= Monte Carlo
+Monte Carlo uses the full trajectory return $G_t$ to give the target $y_t$. Monte Carlo is used to evaluate a policy.
+$ L(V) = 1/2 delta_t^2 $
 $ delta_t = y_t - V(s_t) $
+$ y_t = G_t = sum_(k=0)^(T - t - 1) gamma^k r(s_(t + k), a_(t + k)) $
+$ V (s_t) arrow.l V (s_t) + alpha delta_t $
+= Temporal-Difference Learning
+Temporal-difference learning is very similar to Monte Carlo except it uses *bootstrapping* instead of waiting for the entire episode to end. Like Monte Carlo, temporal-difference learning is used to evaluate a policy. One-step TD is the $V$ version of SARSA.
+
 $ y_t = r(s_t, a_t) + gamma V (s_(t+1)) $
 
-
+For n-step TD,
+$ y_t = G_(t: t + n) = sum_(k=0)^(n-1) gamma^k r(s_(t + k), a_(t + k)) + gamma^n V(s_(t +n)) $
+TD($lambda$) takes the weighted average of different n-step TD,
+$ y_t = (1 - lambda) sum_(n=1)^infinity lambda^(n-1) G_(t: t + n) $
+TD(0) is one-step TD, TD(1) is Monte Carlo.
 = Deep Q-Network (DQN)
 
 The above methods can only apply to finite state spaces, where $Q: cal(S) times cal(A) -> RR$ is a discrete mapping i.e. a vector. In the case of an infinite state space and a finite action space, $Q: cal(S) times cal(A) -> RR$ is a continuous mapping i.e. a function. Instead of using a table as the $Q$ vector, we now use a neural network as the $Q$ function.
